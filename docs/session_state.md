@@ -4,8 +4,8 @@
 - Lab 1 not yet started. Starter scaffold provided by instructor.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/4-category-list`
-- **Active Issue:** Issue 4 — Display the IT request category list
+- **Branch:** `lab1-staging`
+- **Active Issue:** All 4 Issues Completed (Ready for Release PR)
 
 ## Kanban Status
 | Issue | Status |
@@ -13,7 +13,7 @@
 | Issue 1: Project Foundation | Done |
 | Issue 2: Health Check | Done |
 | Issue 3: Category Seed | Done |
-| Issue 4: Category List | PR Review |
+| Issue 4: Category List | Done |
 
 ## Project Structure
 ```
