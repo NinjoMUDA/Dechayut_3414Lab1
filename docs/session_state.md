@@ -4,14 +4,14 @@
 - Lab 1 not yet started. Starter scaffold provided by instructor.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/2-health-check`
-- **Active Issue:** Issue 2 — Implement the API health check
+- **Branch:** `lab1-staging`
+- **Active Issue:** Issue 2 — Completed (Issue 3 next)
 
 ## Kanban Status
 | Issue | Status |
 |-------|--------|
 | Issue 1: Project Foundation | Done |
-| Issue 2: Health Check | PR Review |
+| Issue 2: Health Check | Done |
 | Issue 3: Category Seed | Backlog |
 | Issue 4: Category List | Backlog |
 
