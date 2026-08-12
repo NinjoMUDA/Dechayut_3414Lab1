@@ -4,15 +4,15 @@
 - Lab 1 not yet started. Starter scaffold provided by instructor.
 
 ## Current Branch & Active Issue
-- **Branch:** `lab1-staging`
-- **Active Issue:** Issue 2 — Completed (Issue 3 next)
+- **Branch:** `feature/3-category-seed`
+- **Active Issue:** Issue 3 — Create and seed IT request categories
 
 ## Kanban Status
 | Issue | Status |
 |-------|--------|
 | Issue 1: Project Foundation | Done |
 | Issue 2: Health Check | Done |
-| Issue 3: Category Seed | Backlog |
+| Issue 3: Category Seed | PR Review |
 | Issue 4: Category List | Backlog |
 
 ## Project Structure
