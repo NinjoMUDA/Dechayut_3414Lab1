@@ -4,53 +4,55 @@
 - Lab 1 not yet started. Starter scaffold provided by instructor.
 
 ## Current Branch & Active Issue
-- **Branch:** `main` (no work started yet)
-- **Active Issue:** None — Issue 1 pending
+- **Branch:** `lab1-staging`
+- **Active Issue:** All 4 Issues Completed (Ready for Release PR)
 
 ## Kanban Status
 | Issue | Status |
 |-------|--------|
-| Issue 1: Project Foundation | Backlog |
-| Issue 2: Health Check | Backlog |
-| Issue 3: Category Seed | Backlog |
-| Issue 4: Category List | Backlog |
+| Issue 1: Project Foundation | Done |
+| Issue 2: Health Check | Done |
+| Issue 3: Category Seed | Done |
+| Issue 4: Category List | Done |
 
 ## Project Structure
 ```
 toktickit/
-├── client/          # React + Vite + Bootstrap (starter scaffold)
-│   ├── src/         # App.tsx, api.ts, main.tsx (TODOs present)
-│   ├── tests/       # lab-01/App.test.tsx (TODOs present)
-│   └── *.json/ts    # configs (ready)
-├── server/          # Express + TypeScript (starter scaffold)
-│   ├── src/         # app.ts, index.ts, prisma.ts (TODOs present)
-│   ├── prisma/      # schema.prisma, seed.ts (TODOs present)
-│   └── tests/       # lab-01/health.test.ts (ready), categories.test.ts (TODO)
+├── client/          # React + Vite + Bootstrap
+│   ├── src/         # App.tsx, api.ts, main.tsx
+│   ├── tests/       # lab-01/App.test.tsx
+│   └── package-lock.json
+├── server/          # Express + TypeScript
+│   ├── src/         # app.ts, index.ts, prisma.ts
+│   ├── prisma/      # schema.prisma, seed.ts
+│   ├── tests/       # lab-01/health.test.ts, categories.test.ts
+│   └── package-lock.json
 ├── docs/
-│   └── lab-01/      # ai_use.md, reviewer.md, tests.md (templates)
-├── .gitignore       # ready
-└── README.md        # minimal
+│   ├── ai_execution_rules.md
+│   ├── session_state.md
+│   └── lab-01/      # ai_use.md, reviewer.md, tests.md
+├── .gitignore
+└── README.md
 ```
 
 ## Architecture & DB State
-- PostgreSQL: Not connected
-- Prisma: Not initialized (no migration, no seed)
-- Dependencies: Not installed
+- PostgreSQL: Environment variables set up via `.env`
+- Prisma: Initialized and dependencies installed
+- Dependencies: Client (188 packages), Server (167 packages) installed
 
 ## Task Checklist — Issue 1
-- [ ] Create GitHub repo
-- [ ] Create `lab1-staging` branch
-- [ ] Create `feature/1-project-foundation` branch
-- [ ] Install client dependencies
-- [ ] Install server dependencies
-- [ ] Configure `.env` files
-- [ ] Initialize Prisma
-- [ ] Verify frontend starts
-- [ ] Verify backend starts
-- [ ] Verify test runners work
-- [ ] Commit & push
+- [x] Create GitHub repo
+- [x] Create `lab1-staging` branch
+- [x] Create `feature/1-project-foundation` branch
+- [x] Install client dependencies
+- [x] Install server dependencies
+- [x] Configure `.env` files
+- [x] Initialize Prisma
+- [x] Verify frontend starts/builds
+- [x] Verify test runner works
+- [x] Commit & push feature branch
 - [ ] Create PR → `lab1-staging`
 - [ ] Peer review & merge
 
 ## Last Executed Command
-None yet.
+`git commit -m "chore: add lockfiles for foundation setup"` (Exit code: 0)
