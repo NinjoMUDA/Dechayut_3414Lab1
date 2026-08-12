@@ -4,13 +4,13 @@
 - Lab 1 not yet started. Starter scaffold provided by instructor.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/1-project-foundation`
-- **Active Issue:** Issue 1 — Set up the TokTickIT project foundation
+- **Branch:** `lab1-staging`
+- **Active Issue:** Issue 1 — Completed (Issue 2/3 next)
 
 ## Kanban Status
 | Issue | Status |
 |-------|--------|
-| Issue 1: Project Foundation | PR Review |
+| Issue 1: Project Foundation | Done |
 | Issue 2: Health Check | Backlog |
 | Issue 3: Category Seed | Backlog |
 | Issue 4: Category List | Backlog |
