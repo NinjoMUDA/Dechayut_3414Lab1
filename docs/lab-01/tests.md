@@ -10,4 +10,17 @@ All test files live under server/tests/lab-01/ and client/tests/lab-01/.
 | 4 | Vitest | Success state shows Online + category list | Passed (Renders System Status: Online & 4 categories) |
 | 5 | Vitest | Error state shows Offline + message | Passed (Renders System Status: Offline & error message) |
 
-Paste your passing terminal output / screenshot below.
+### Terminal Output Evidence
+
+```text
+Server Tests (Supertest):
+ ✓ tests/lab-01/categories.test.ts (1)
+ ✓ tests/lab-01/health.test.ts (1)
+ Test Files  2 passed (2)
+ Tests       2 passed (2)
+
+Client Tests (Vitest):
+ ✓ tests/lab-01/App.test.tsx (3)
+ Test Files  1 passed (1)
+ Tests       3 passed (3)
+```
