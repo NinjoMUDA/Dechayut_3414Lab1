@@ -24,8 +24,8 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 | API-09 | API | AC-08, BR-11 | Upload 6th active attachment to a ticket | 400 Bad Request; max 5 active attachments limit message | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | API-10 | API | AC-09, FR-15, BR-12 | Soft-remove attachment with valid reason string | 200 OK; `isRemoved = true`, `removalReason` saved, `removedAt` set | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | API-11 | API | AC-10, FR-14, BR-12 | Attempt download of soft-removed attachment via `/api/attachments/:id/download` | 410 Gone / 404 Not Found; file stream not served | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| API-12 | API | AC-13, BR-05 | Query `/api/requesters` | 200 OK; returns only active requesters (`isActive: true`); inactive requesters excluded | `server/tests/lab-02/dev-requester.api.test.ts` | Planned |
-| UI-01 | UI | AC-02, FR-01 | Dev Requester Selector rendering when no requester selected | Modal / Select screen displayed with active seeded requesters dropdown | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
+| API-12 | API | AC-13, BR-05 | Query `/api/requesters` | 200 OK; returns only active requesters (`isActive: true`); inactive requesters excluded | `server/tests/lab-02/dev-requester.api.test.ts` | Pass |
+| UI-01 | UI | AC-02, FR-01 | Dev Requester Selector rendering when no requester selected | Modal / Select screen displayed with active seeded requesters dropdown | `client/tests/lab-02/RequesterSelector.test.tsx` | Pass |
 | UI-02 | UI | AC-05, BR-06, BR-07 | Submit Create Ticket form with empty inputs | Inline dark red error messages displayed below Summary & Description; API not called | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | UI-03 | UI | AC-01, FR-05 | Submit valid Create Ticket form | Submit button displays busy state; success banner shows official Ticket Number | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | UI-04 | UI | AC-14, BR-14 | Submit form when backend fails / network error | Error alert shown; entered field values remain preserved in form inputs | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
@@ -41,7 +41,7 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 | Acceptance Criterion | Unit / Helper | Supertest API Tests | UI Component Tests | E2E Tests |
 |---|---|---|---|---|
 | **AC-01** (Ticket Creation Success) | `formatTicketNumber` | `API-01` | `UI-03` | `E2E-01` |
-| **AC-02** (Requester Context Guard) | - | - | `UI-01` | `E2E-01` |
+| **AC-02** (Requester Context Guard) | - | - | `UI-01` (Pass) | `E2E-01` |
 | **AC-03** (Multi-Requester Isolation)| - | `API-03` | `UI-05` | `E2E-01` |
 | **AC-04** (Unauthorized Ticket Detail)| - | `API-06` | `UI-07` | - |
 | **AC-05** (Field Validation Errors) | `validateTicketForm` | `API-02` | `UI-02` | - |
@@ -52,7 +52,7 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 | **AC-10** (Blocked Removed Download)| - | `API-11` | `UI-07` | `E2E-01` |
 | **AC-11** (Search & Filter Query) | `buildTicketQuery` | `API-04` | `UI-06` | `E2E-01` |
 | **AC-12** (Pagination Controls) | `paginateArray` | `API-05` | `UI-06` | - |
-| **AC-13** (Inactive Requester Filter)| - | `API-12` | `UI-01` | - |
+| **AC-13** (Inactive Requester Filter)| - | `API-12` (Pass) | `UI-01` (Pass) | - |
 | **AC-14** (Safe Failure & Retention)| - | - | `UI-04` | - |
 
 ---
@@ -82,7 +82,20 @@ npm run test:e2e
 ---
 
 ## 6. Final Results
-*(To be populated with actual terminal outputs and evidence upon test execution)*
+```
+Server tests:
+ ✓ tests/lab-01/health.test.ts (1 test) 32ms
+ ✓ tests/lab-01/categories.test.ts (1 test) 70ms
+ ✓ tests/lab-02/dev-requester.api.test.ts (3 tests) 100ms
+ Test Files  3 passed (3)
+      Tests  5 passed (5)
+
+Client tests:
+ ✓ tests/lab-02/RequesterSelector.test.tsx (3 tests) 142ms
+ ✓ tests/lab-01/App.test.tsx (3 tests) 165ms
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+```
 
 ---
 

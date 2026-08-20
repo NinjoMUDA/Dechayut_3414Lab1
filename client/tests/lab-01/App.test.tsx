@@ -5,12 +5,17 @@ import { checkSystem } from "../../src/api.js";
 
 vi.mock("../../src/api.js", () => ({
   checkSystem: vi.fn(),
+  getRequesters: vi.fn().mockResolvedValue([
+    { id: 1, name: "Jennifer Anderson", email: "jennifer.anderson@example.com", isActive: true },
+  ]),
+  getCategories: vi.fn().mockResolvedValue([]),
+  getRelatedSystems: vi.fn().mockResolvedValue([]),
 }));
 
 describe("App", () => {
   it("renders the TokTickIT heading", () => {
     render(<App />);
-    expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/TokTickIT/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows Online and the seeded categories on success", async () => {
