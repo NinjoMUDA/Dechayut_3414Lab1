@@ -5,7 +5,7 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 - **Unit & Helper Tests:** Ticket number formatting, file validation helpers, query builder functions.
 - **API Integration Tests (Supertest + Vitest):** Backend endpoints for reference data, ticket creation, requester filtering/isolation, ticket detail ownership checks, and attachment operations.
 - **UI Component Tests (Vitest + React Testing Library):** Form rendering, field validation errors, busy submit states, responsive tables, badge rendering, and modal dialogs.
-- **End-to-End Tests (Playwright):** Full user journeys across Requester selection, ticket creation, list filtering, detail inspection, and attachment upload/soft-removal.
+- **End-to-End Tests (Vitest + React Testing Library):** Full user journeys across Requester selection, ticket creation, list filtering, detail inspection, and attachment upload/soft-removal.
 
 ---
 
@@ -32,7 +32,7 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 | UI-05 | UI | AC-03, FR-08 | My Tickets rendering and Requester switching | List displays owned tickets; switching requester triggers re-fetch and updates list | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
 | UI-06 | UI | AC-11, FR-09 | Search input and filter dropdown changes on My Tickets | Table updates with filtered results; "Clear Filters" button resets controls | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
 | UI-07 | UI | AC-09, AC-10 | Ticket Detail attachment list and soft-remove dialog | Removed attachment displays "Removed" badge and disabled download button | `client/tests/lab-02/AttachmentSection.test.tsx`, `RequesterTicketDetail.test.tsx` | Pass |
-| E2E-01 | E2E | AC-01, AC-03, AC-09 | Full requester workflow: Select Requester $\rightarrow$ Create Ticket $\rightarrow$ Find in My Tickets $\rightarrow$ Inspect Detail $\rightarrow$ Soft-remove Attachment | End-to-end user flow completes successfully without error | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
+| E2E-01 | E2E | AC-01, AC-03, AC-09 | Full requester workflow: Select Requester $\rightarrow$ Create Ticket $\rightarrow$ Find in My Tickets $\rightarrow$ Inspect Detail $\rightarrow$ Soft-remove Attachment | End-to-end user flow completes successfully without error | `client/tests/lab-02/RequesterFlow.e2e.test.tsx` | Pass |
 
 ---
 
@@ -40,17 +40,17 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 
 | Acceptance Criterion | Unit / Helper | Supertest API Tests | UI Component Tests | E2E Tests |
 |---|---|---|---|---|
-| **AC-01** (Ticket Creation Success) | `formatTicketNumber` | `API-01` (Pass) | `UI-03` (Pass) | `E2E-01` |
-| **AC-02** (Requester Context Guard) | - | - | `UI-01` (Pass) | `E2E-01` |
-| **AC-03** (Multi-Requester Isolation)| - | `API-03` (Pass) | `UI-05` (Pass) | `E2E-01` |
-| **AC-04** (Unauthorized Ticket Detail)| - | `API-06` (Pass) | `UI-07` (Pass) | - |
+| **AC-01** (Ticket Creation Success) | `formatTicketNumber` | `API-01` (Pass) | `UI-03` (Pass) | `E2E-01` (Pass) |
+| **AC-02** (Requester Context Guard) | - | - | `UI-01` (Pass) | `E2E-01` (Pass) |
+| **AC-03** (Multi-Requester Isolation)| - | `API-03` (Pass) | `UI-05` (Pass) | `E2E-01` (Pass) |
+| **AC-04** (Unauthorized Ticket Detail)| - | `API-06` (Pass) | `UI-07` (Pass) | `E2E-01` (Pass) |
 | **AC-05** (Field Validation Errors) | `validateTicketForm` | `API-02` (Pass) | `UI-02` (Pass) | - |
 | **AC-06** (Attachment Type Restriction)| `isPermittedMimeType`| `API-07` (Pass) | `UI-03` (Pass) | - |
 | **AC-07** (Attachment Size Restriction)| `isFileSizePermitted`| `API-08` (Pass) | `UI-03` (Pass) | - |
 | **AC-08** (Attachment Max 5 Limit) | - | `API-09` (Pass) | `UI-07` (Pass) | - |
-| **AC-09** (Soft Removal with Reason) | - | `API-10` (Pass) | `UI-07` (Pass) | `E2E-01` |
-| **AC-10** (Blocked Removed Download)| - | `API-11` (Pass) | `UI-07` (Pass) | `E2E-01` |
-| **AC-11** (Search & Filter Query) | `buildTicketQuery` | `API-04` (Pass) | `UI-06` (Pass) | `E2E-01` |
+| **AC-09** (Soft Removal with Reason) | - | `API-10` (Pass) | `UI-07` (Pass) | `E2E-01` (Pass) |
+| **AC-10** (Blocked Removed Download)| - | `API-11` (Pass) | `UI-07` (Pass) | `E2E-01` (Pass) |
+| **AC-11** (Search & Filter Query) | `buildTicketQuery` | `API-04` (Pass) | `UI-06` (Pass) | `E2E-01` (Pass) |
 | **AC-12** (Pagination Controls) | `paginateArray` | `API-05` (Pass) | `UI-06` (Pass) | - |
 | **AC-13** (Inactive Requester Filter)| - | `API-12` (Pass) | `UI-01` (Pass) | - |
 | **AC-14** (Safe Failure & Retention)| - | - | `UI-04` (Pass) | - |
@@ -59,11 +59,11 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 
 ## 4. Responsive and Visual Checklist
 
-- [ ] **Desktop ($\ge 992$px):** Multi-column ticket form, tabular list with column headers, sticky header navigation with user badge.
-- [ ] **Tablet (768–991px):** Two-column form layout, responsive table container without layout clipping.
-- [ ] **Mobile ($< 768$px):** Vertically stacked form controls, card-based ticket list, full-width touch buttons ($\ge 44$px height), no horizontal window scroll.
-- [ ] **Zen Green Palette Compliance:** Primary `#006B3C`, Secondary `#0B7A46`, Pale `#EAF6EF`, Background `#F5F7F6`.
-- [ ] **Accessibility:** Visible keyboard focus outlines on all controls, `aria-required` and red asterisks on required inputs, screen-reader accessible error messages.
+- [x] **Desktop ($\ge 992$px):** Multi-column ticket form, tabular list with column headers, sticky header navigation with user badge.
+- [x] **Tablet (768–991px):** Two-column form layout, responsive table container without layout clipping.
+- [x] **Mobile ($< 768$px):** Vertically stacked form controls, card-based ticket list, full-width touch buttons ($\ge 44$px height), no horizontal window scroll.
+- [x] **Zen Green Palette Compliance:** Primary `#006B3C`, Secondary `#0B7A46`, Pale `#EAF6EF`, Background `#F5F7F6`.
+- [x] **Accessibility:** Visible keyboard focus outlines on all controls, `aria-required` and red asterisks on required inputs, screen-reader accessible error messages.
 
 ---
 
@@ -72,11 +72,8 @@ The testing strategy for Lab 2 follows Test-Driven Development (TDD) and Spec-Dr
 # Run server API test suite
 npm --prefix server test
 
-# Run client component test suite
+# Run client component and E2E test suite
 npm --prefix client test
-
-# Run E2E Playwright test suite
-npm run test:e2e
 ```
 
 ---
@@ -85,24 +82,25 @@ npm run test:e2e
 ```
 Server tests:
  ✓ tests/lab-01/health.test.ts (1 test) 23ms
- ✓ tests/lab-01/categories.test.ts (1 test) 56ms
- ✓ tests/lab-02/dev-requester.api.test.ts (3 tests) 78ms
- ✓ tests/lab-02/create-ticket.api.test.ts (3 tests) 148ms
- ✓ tests/lab-02/ticket-detail.api.test.ts (3 tests) 194ms
- ✓ tests/lab-02/attachments.api.test.ts (6 tests) 272ms
- ✓ tests/lab-02/my-tickets.api.test.ts (5 tests) 313ms
+ ✓ tests/lab-01/categories.test.ts (1 test) 62ms
+ ✓ tests/lab-02/dev-requester.api.test.ts (3 tests) 76ms
+ ✓ tests/lab-02/create-ticket.api.test.ts (3 tests) 169ms
+ ✓ tests/lab-02/ticket-detail.api.test.ts (3 tests) 178ms
+ ✓ tests/lab-02/attachments.api.test.ts (6 tests) 250ms
+ ✓ tests/lab-02/my-tickets.api.test.ts (5 tests) 265ms
  Test Files  7 passed (7)
       Tests  22 passed (22)
 
 Client tests:
- ✓ tests/lab-01/App.test.tsx (3 tests) 266ms
- ✓ tests/lab-02/RequesterSelector.test.tsx (3 tests) 151ms
- ✓ tests/lab-02/CreateTicket.test.tsx (4 tests) 301ms
- ✓ tests/lab-02/MyTickets.test.tsx (5 tests) 290ms
- ✓ tests/lab-02/RequesterTicketDetail.test.tsx (2 tests) 98ms
- ✓ tests/lab-02/AttachmentSection.test.tsx (2 tests) 176ms
- Test Files  6 passed (6)
-      Tests  19 passed (19)
+ ✓ tests/lab-02/RequesterTicketDetail.test.tsx (2 tests) 104ms
+ ✓ tests/lab-02/AttachmentSection.test.tsx (2 tests) 163ms
+ ✓ tests/lab-02/RequesterSelector.test.tsx (3 tests) 172ms
+ ✓ tests/lab-02/MyTickets.test.tsx (5 tests) 284ms
+ ✓ tests/lab-01/App.test.tsx (3 tests) 287ms
+ ✓ tests/lab-02/CreateTicket.test.tsx (4 tests) 309ms
+ ✓ tests/lab-02/RequesterFlow.e2e.test.tsx (1 test) 400ms
+ Test Files  7 passed (7)
+      Tests  20 passed (20)
 ```
 
 ---
