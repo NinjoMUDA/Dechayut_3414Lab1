@@ -15,7 +15,7 @@
 | 3 | Dev Requester Context | "ทำต่อเลยจนกว่าจะให้ review" | Implemented Prisma schema (`RequesterUser`, `RelatedSystem`, `Category`, `Ticket`, `Attachment`), migration, seed, active requester backend API, and Zen Green RequesterSelector UI with full test coverage (5 server tests, 6 client tests). |
 | 4 | Ticket Creation | "ลุยต่อ" | Implemented `POST /api/tickets` with unique `TKT-YYYY-XXXXXX` generator, field validations, and Zen Green CreateTicket UI with attachment validation and error preservation (8 server tests, 10 client tests). |
 | 5 | My Tickets View | "review แล้วต่อเลย" | Implemented `GET /api/tickets` multi-attribute query engine with multi-tenant requester isolation, keyword search, category/priority/status filters, sorting, pagination, and Zen Green responsive table/card MyTickets UI (13 server tests, 15 client tests). |
-| 6 | Ticket Detail & Attachments | *(Upcoming)* | Implement attachment upload, download, and soft removal. |
+| 6 | Ticket Detail & Attachments | "ต่อเลย" | Implemented `GET /api/tickets/:id` (with 403 guard), attachment upload (Multer, JPG/PNG/WEBP/PDF $\le 5$MB, max 5 limit), blocked download for removed files (410 Gone), soft removal with mandatory reason, and Zen Green `RequesterTicketDetail` / `AttachmentSection` UI (22 server tests, 19 client tests). |
 
 ---
 
