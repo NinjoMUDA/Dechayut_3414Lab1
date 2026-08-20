@@ -1,4 +1,11 @@
-import { Category, RelatedSystem, RequesterUser, Ticket, Priority } from "./types/index.js";
+import {
+  Category,
+  RelatedSystem,
+  RequesterUser,
+  Ticket,
+  Priority,
+  PaginatedResponse,
+} from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
@@ -14,6 +21,19 @@ export interface CreateTicketPayload {
   summary: string;
   description: string;
   requestedPriority: Priority;
+}
+
+export interface GetTicketsParams {
+  requesterId: number;
+  search?: string;
+  categoryId?: number | "";
+  requestedPriority?: string;
+  itPriority?: string;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
 }
 
 export async function checkSystem(): Promise<SystemStatus> {
@@ -75,5 +95,50 @@ export async function createTicket(payload: CreateTicketPayload): Promise<Ticket
   return json.data;
 }
 
+export async function getTickets(params: GetTicketsParams): Promise<PaginatedResponse<Ticket>> {
+  const query = new URLSearchParams();
+  query.set("requesterId", String(params.requesterId));
+
+  if (params.search && params.search.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.categoryId) {
+    query.set("categoryId", String(params.categoryId));
+  }
+  if (params.requestedPriority) {
+    query.set("requestedPriority", params.requestedPriority);
+  }
+  if (params.itPriority) {
+    query.set("itPriority", params.itPriority);
+  }
+  if (params.status) {
+    query.set("status", params.status);
+  }
+  if (params.sortBy) {
+    query.set("sortBy", params.sortBy);
+  }
+  if (params.sortOrder) {
+    query.set("sortOrder", params.sortOrder);
+  }
+  if (params.page) {
+    query.set("page", String(params.page));
+  }
+  if (params.limit) {
+    query.set("limit", String(params.limit));
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets?${query.toString()}`, {
+    headers: {
+      "x-requester-id": String(params.requesterId),
+    },
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Failed to retrieve tickets");
+  }
+  return json;
+}
+
 export { API_URL };
-export type { Category, RelatedSystem, RequesterUser, Ticket, Priority };
+export type { Category, RelatedSystem, RequesterUser, Ticket, Priority, PaginatedResponse };

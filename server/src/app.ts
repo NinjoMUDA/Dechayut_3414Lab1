@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { getPrisma } from "./prisma.js";
-import { Priority } from "@prisma/client";
+import { Priority, TicketStatus } from "@prisma/client";
 
 // Exported separately from app.listen() for Supertest
 export const app = express();
@@ -138,28 +138,42 @@ app.post("/api/tickets", async (req: Request, res: Response) => {
 
     // Generate unique Ticket Number (TKT-YYYY-XXXXXX)
     const currentYear = new Date().getFullYear();
-    const count = await prisma.ticket.count();
-    const nextSeq = String(count + 1).padStart(6, "0");
-    const ticketNumber = `TKT-${currentYear}-${nextSeq}`;
+    let ticket = null;
+    let attempts = 0;
+    
+    while (attempts < 10) {
+      try {
+        const count = await prisma.ticket.count();
+        const offset = attempts === 0 ? 1 : Math.floor(Math.random() * 900000) + 1;
+        const nextSeq = String((count + offset) % 1000000).padStart(6, "0");
+        const ticketNumber = `TKT-${currentYear}-${nextSeq}`;
 
-    // Create ticket in database
-    const ticket = await prisma.ticket.create({
-      data: {
-        ticketNumber,
-        requesterId,
-        categoryId: Number(categoryId),
-        relatedSystemId: Number(relatedSystemId),
-        summary: summary.trim(),
-        description: description.trim(),
-        requestedPriority: priorityValue as Priority,
-        currentStatus: "NEW",
-      },
-      include: {
-        requester: { select: { id: true, name: true, email: true } },
-        category: { select: { id: true, name: true } },
-        relatedSystem: { select: { id: true, name: true } },
-      },
-    });
+        ticket = await prisma.ticket.create({
+          data: {
+            ticketNumber,
+            requesterId,
+            categoryId: Number(categoryId),
+            relatedSystemId: Number(relatedSystemId),
+            summary: summary.trim(),
+            description: description.trim(),
+            requestedPriority: priorityValue as Priority,
+            currentStatus: "NEW",
+          },
+          include: {
+            requester: { select: { id: true, name: true, email: true } },
+            category: { select: { id: true, name: true } },
+            relatedSystem: { select: { id: true, name: true } },
+          },
+        });
+        break;
+      } catch (err: any) {
+        if (err.code === "P2002" && attempts < 9) {
+          attempts++;
+          continue;
+        }
+        throw err;
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -169,6 +183,115 @@ app.post("/api/tickets", async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: "Unable to create ticket",
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Lab 2 Issue 4 — My Tickets Query (GET /api/tickets)
+// ---------------------------------------------------------------------------
+app.get("/api/tickets", async (req: Request, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const requesterHeader = req.headers["x-requester-id"];
+    const requesterId = Number(req.query.requesterId || requesterHeader);
+
+    if (!requesterId || isNaN(requesterId)) {
+      res.status(400).json({
+        success: false,
+        error: "Requester ID is required",
+      });
+      return;
+    }
+
+    const {
+      search,
+      categoryId,
+      requestedPriority,
+      itPriority,
+      status,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = "1",
+      limit = "10",
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(String(page), 10) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(String(limit), 10) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Multi-tenant isolation: strictly filter by requesterId
+    const where: any = {
+      requesterId,
+    };
+
+    // Keyword Search (in ticketNumber or summary)
+    if (search && typeof search === "string" && search.trim() !== "") {
+      const query = search.trim();
+      where.OR = [
+        { ticketNumber: { contains: query, mode: "insensitive" } },
+        { summary: { contains: query, mode: "insensitive" } },
+      ];
+    }
+
+    // Category Filter
+    if (categoryId && !isNaN(Number(categoryId))) {
+      where.categoryId = Number(categoryId);
+    }
+
+    // Priority Filters
+    if (requestedPriority && typeof requestedPriority === "string") {
+      where.requestedPriority = requestedPriority.toUpperCase() as Priority;
+    }
+    if (itPriority && typeof itPriority === "string") {
+      where.itPriority = itPriority.toUpperCase() as Priority;
+    }
+
+    // Status Filter
+    if (status && typeof status === "string") {
+      where.currentStatus = status.toUpperCase() as TicketStatus;
+    }
+
+    // Validate sort field
+    const validSortFields = ["ticketNumber", "createdAt", "updatedAt", "summary"];
+    const sortField = validSortFields.includes(String(sortBy)) ? String(sortBy) : "createdAt";
+    const sortDirection: "asc" | "desc" = String(sortOrder).toLowerCase() === "asc" ? "asc" : "desc";
+
+    const [totalItems, tickets] = await Promise.all([
+      prisma.ticket.count({ where }),
+      prisma.ticket.findMany({
+        where,
+        skip,
+        take: limitNum,
+        orderBy: { [sortField]: sortDirection },
+        include: {
+          category: { select: { id: true, name: true } },
+          relatedSystem: { select: { id: true, name: true } },
+          requester: { select: { id: true, name: true, email: true } },
+          attachments: {
+            where: { isRemoved: false },
+            select: { id: true, originalFilename: true, fileSize: true, mimeType: true, isRemoved: true, createdAt: true },
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limitNum) || 1;
+
+    res.json({
+      success: true,
+      data: tickets,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        totalItems,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Unable to retrieve tickets",
     });
   }
 });
