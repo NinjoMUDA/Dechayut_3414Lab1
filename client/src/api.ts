@@ -3,6 +3,7 @@ import {
   RelatedSystem,
   RequesterUser,
   Ticket,
+  Attachment,
   Priority,
   PaginatedResponse,
 } from "./types/index.js";
@@ -140,5 +141,68 @@ export async function getTickets(params: GetTicketsParams): Promise<PaginatedRes
   return json;
 }
 
+export async function getTicketDetail(ticketId: number, requesterId: number): Promise<Ticket> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}`, {
+    headers: {
+      "x-requester-id": String(requesterId),
+    },
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Failed to load ticket details");
+  }
+  return json.data;
+}
+
+export async function uploadAttachment(
+  ticketId: number,
+  file: File,
+  requesterId: number
+): Promise<Attachment> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("requesterId", String(requesterId));
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
+    method: "POST",
+    headers: {
+      "x-requester-id": String(requesterId),
+    },
+    body: formData,
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Failed to upload attachment");
+  }
+  return json.data;
+}
+
+export async function softRemoveAttachment(
+  attachmentId: number,
+  removalReason: string,
+  requesterId: number
+): Promise<Attachment> {
+  const res = await fetch(`${API_URL}/api/attachments/${attachmentId}/soft-remove`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "x-requester-id": String(requesterId),
+    },
+    body: JSON.stringify({ removalReason, requesterId }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Failed to soft-remove attachment");
+  }
+  return json.data;
+}
+
+export function getDownloadUrl(attachmentId: number, requesterId: number): string {
+  return `${API_URL}/api/attachments/${attachmentId}/download?requesterId=${requesterId}`;
+}
+
 export { API_URL };
-export type { Category, RelatedSystem, RequesterUser, Ticket, Priority, PaginatedResponse };
+export type { Category, RelatedSystem, RequesterUser, Ticket, Attachment, Priority, PaginatedResponse };

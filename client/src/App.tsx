@@ -4,6 +4,7 @@ import { Navbar } from "./components/Navbar.js";
 import { RequesterSelector } from "./components/RequesterSelector.js";
 import { CreateTicket } from "./components/CreateTicket.js";
 import { MyTickets } from "./components/MyTickets.js";
+import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { checkSystem, Category, Ticket } from "./api.js";
 
 type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail";
@@ -12,7 +13,7 @@ function MainApp() {
   const { activeRequester } = useRequester();
   const [currentView, setCurrentView] = useState<ViewMode>("my-tickets");
   const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(!activeRequester);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
 
   // Lab 1 System Status check state
   const [systemStatus, setSystemStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -33,7 +34,7 @@ function MainApp() {
   }
 
   const handleOpenTicketDetail = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
+    setSelectedTicketId(ticket.id);
     setCurrentView("ticket-detail");
   };
 
@@ -44,7 +45,7 @@ function MainApp() {
         currentView={currentView}
         onNavigate={(view) => {
           setCurrentView(view);
-          setSelectedTicket(null);
+          setSelectedTicketId(null);
         }}
         onOpenSelector={() => setIsSelectorOpen(true)}
       />
@@ -72,36 +73,37 @@ function MainApp() {
         {/* Create Ticket View */}
         {currentView === "create-ticket" && (
           <CreateTicket
-            onSuccessNavigate={() => setCurrentView("my-tickets")}
-            onCancel={() => setCurrentView("my-tickets")}
+            onSuccessNavigate={() => {
+              setCurrentView("my-tickets");
+              setSelectedTicketId(null);
+            }}
+            onCancel={() => {
+              setCurrentView("my-tickets");
+              setSelectedTicketId(null);
+            }}
           />
         )}
 
         {/* My Tickets View */}
         {currentView === "my-tickets" && (
           <MyTickets
-            onCreateTicketClick={() => setCurrentView("create-ticket")}
+            onCreateTicketClick={() => {
+              setCurrentView("create-ticket");
+              setSelectedTicketId(null);
+            }}
             onSelectTicket={handleOpenTicketDetail}
           />
         )}
 
-        {/* Ticket Detail Placeholder (To be completed in Issue 5) */}
-        {currentView === "ticket-detail" && selectedTicket && (
-          <div className="zen-card p-4">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2 className="h4 fw-bold mb-0">
-                Ticket Detail: <span className="text-success font-monospace">{selectedTicket.ticketNumber}</span>
-              </h2>
-              <button
-                className="btn btn-zen-secondary btn-sm"
-                onClick={() => setCurrentView("my-tickets")}
-              >
-                ← Back to My Tickets
-              </button>
-            </div>
-            <p className="lead">{selectedTicket.summary}</p>
-            <p className="text-muted">{selectedTicket.description}</p>
-          </div>
+        {/* Ticket Detail View */}
+        {currentView === "ticket-detail" && selectedTicketId && (
+          <RequesterTicketDetail
+            ticketId={selectedTicketId}
+            onBack={() => {
+              setCurrentView("my-tickets");
+              setSelectedTicketId(null);
+            }}
+          />
         )}
 
         {/* System Verification Section (Lab 1 & Lab 2 Connectivity) */}
