@@ -13,7 +13,7 @@
 | 1 | Engineering Contract | "อ่านและทำความเข้าใจ lab 2ก่อน แล้วค่อยเขียน plan" | Analyzed 22-page Lab 2 labsheet, drafted 6-issue decomposition, and prepared comprehensive engineering specification (`specification.md`, `tests.md`, `ui-spec.md`, `api-spec.md`). |
 | 2 | Spec & Test Matrix | "เริ่มเลย" | Generated full functional requirements (FR-01..16), business rules (BR-01..14), acceptance criteria (AC-01..14), and mapped planned automated tests across unit, API, UI, and E2E levels. |
 | 3 | Dev Requester Context | "ทำต่อเลยจนกว่าจะให้ review" | Implemented Prisma schema (`RequesterUser`, `RelatedSystem`, `Category`, `Ticket`, `Attachment`), migration, seed, active requester backend API, and Zen Green RequesterSelector UI with full test coverage (5 server tests, 6 client tests). |
-| 4 | Ticket Creation | *(Upcoming)* | Implement `POST /api/tickets` and Zen Green Create Ticket form. |
+| 4 | Ticket Creation | "ลุยต่อ" | Implemented `POST /api/tickets` with unique `TKT-YYYY-XXXXXX` generator, field validations, and Zen Green CreateTicket UI with attachment validation and error preservation (8 server tests, 10 client tests). |
 | 5 | My Tickets View | *(Upcoming)* | Implement multi-attribute query engine and My Tickets UI. |
 | 6 | Ticket Detail & Attachments | *(Upcoming)* | Implement attachment upload, download, and soft removal. |
 

@@ -1,10 +1,19 @@
-import { Category, RelatedSystem, RequesterUser } from "./types/index.js";
+import { Category, RelatedSystem, RequesterUser, Ticket, Priority } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 export interface SystemStatus {
   online: boolean;
   categories: Category[];
+}
+
+export interface CreateTicketPayload {
+  requesterId: number;
+  categoryId: number;
+  relatedSystemId: number;
+  summary: string;
+  description: string;
+  requestedPriority: Priority;
 }
 
 export async function checkSystem(): Promise<SystemStatus> {
@@ -46,5 +55,25 @@ export async function getRelatedSystems(): Promise<RelatedSystem[]> {
   return res.json();
 }
 
+export async function createTicket(payload: CreateTicketPayload): Promise<Ticket> {
+  const res = await fetch(`${API_URL}/api/tickets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-requester-id": String(payload.requesterId),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    const errorMsg = json.details
+      ? Object.values(json.details).join(". ")
+      : json.error || "Failed to create ticket";
+    throw new Error(errorMsg);
+  }
+  return json.data;
+}
+
 export { API_URL };
-export type { Category, RelatedSystem, RequesterUser };
+export type { Category, RelatedSystem, RequesterUser, Ticket, Priority };
