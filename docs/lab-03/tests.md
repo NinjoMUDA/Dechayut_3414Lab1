@@ -12,15 +12,15 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 
 | Test ID | Type | Requirement / AC | What It Tests | Expected Result | Automated Test File | Status |
 |---|---|---|---|---|---|---|
-| API-01 | API | AC-01, FR-01 | Valid user login | 200 OK; returns JWT token & safe user profile (without password hash) | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-02 | API | AC-01, BR-01 | Login with incorrect password | 401 Unauthorized; safe failure message; no account details leaked | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-03 | API | AC-10, BR-01 | Login with inactive user account (`isActive: false`) | 401 Unauthorized; login blocked | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-04 | API | FR-02 | Current user profile query `/api/auth/me` with valid token | 200 OK; returns active user details and role | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-05 | API | AC-02, FR-03, BR-02 | Password change via `/api/auth/change-password` | 200 OK; password updated in DB; `mustChangePassword` cleared | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-06 | API | FR-01, FR-05 | Unauthenticated request to protected endpoints | 401 Unauthorized; operation rejected | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| API-01 | API | AC-01, FR-01 | Valid user login | 200 OK; returns JWT token & safe user profile (without password hash) | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-02 | API | AC-01, BR-01 | Login with incorrect password | 401 Unauthorized; safe failure message; no account details leaked | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-03 | API | AC-10, BR-01 | Login with inactive user account (`isActive: false`) | 401 Unauthorized; login blocked | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-04 | API | FR-02 | Current user profile query `/api/auth/me` with valid token | 200 OK; returns active user details and role | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-05 | API | AC-02, FR-03, BR-02 | Password change via `/api/auth/change-password` | 200 OK; password updated in DB; `mustChangePassword` cleared | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-06 | API | FR-01, FR-05 | Unauthenticated request to protected endpoints | 401 Unauthorized; operation rejected | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | API-07 | API | FR-05, BR-04 | Requester accessing Admin endpoint `/api/admin/users` | 403 Forbidden; access denied | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | API-08 | API | AC-04, FR-13, BR-05 | Requester querying `/api/tickets/:id/notes` | 403 Forbidden; no note data leaked | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
-| API-09 | API | AC-03, FR-06, BR-03 | Requester accessing ticket belonging to another user | 403 Forbidden or 404 Not Found; strict user isolation | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| API-09 | API | AC-03, FR-06, BR-03 | Requester accessing ticket belonging to another user | 403 Forbidden or 404 Not Found; strict user isolation | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | API-10 | API | AC-05, FR-09 | IT Staff queue retrieval with search, filters, and pagination | 200 OK; filtered tickets returned with correct pagination metadata | `server/tests/lab-03/staff-queue.api.test.ts` | Planned |
 | API-11 | API | AC-06, FR-10, BR-12 | IT Staff claim and reassign ticket ownership | 200 OK; `ticketOwnerId` updated to specified staff user | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
 | API-12 | API | AC-06, FR-11, BR-13 | IT Staff updates IT Priority | 200 OK; `itPriority` updated; requestedPriority unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
@@ -33,8 +33,8 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | API-19 | API | AC-09, FR-18, BR-10 | Admin attempts self-deactivation | 400 Bad Request; self-deactivation blocked | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-20 | API | AC-09, FR-18, BR-11 | Admin attempts to deactivate or demote last active Admin | 400 Bad Request; last admin removal blocked | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-21 | API | FR-17 | Admin resets user initial password | 200 OK; `mustChangePassword` reset to true | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| UI-01 | UI | AC-01, FR-01 | Login screen rendering, input validation, and busy state | Inline validation errors on empty submission; spinner while calling API | `client/tests/lab-03/Login.test.tsx` | Planned |
-| UI-02 | UI | AC-02, FR-03, BR-07 | ChangePassword screen validation & password rules | Real-time complexity checklist; prevents submit if rules unmet | `client/tests/lab-03/ChangePassword.test.tsx` | Planned |
+| UI-01 | UI | AC-01, FR-01 | Login screen rendering, input validation, and busy state | Inline validation errors on empty submission; spinner while calling API | `client/tests/lab-03/Login.test.tsx` | Pass |
+| UI-02 | UI | AC-02, FR-03, BR-07 | ChangePassword screen validation & password rules | Real-time complexity checklist; prevents submit if rules unmet | `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-03 | UI | AC-05, FR-09 | StaffTicketQueue table, search bar, filters, pagination | Table renders correctly; filter updates trigger fetch; pagination works | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
 | UI-04 | UI | AC-06, FR-10-13 | StaffTicketDetail controls, notes and comments tabs | Claim button, priority selector, status dropdown, distinct note styling | `client/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-05 | UI | AC-08, AC-09 | UserManagement user table, create/edit modals, safety warnings | User listing, create form, edit form, self-deactivation warning disabled | `client/tests/lab-03/UserManagement.test.tsx` | Planned |

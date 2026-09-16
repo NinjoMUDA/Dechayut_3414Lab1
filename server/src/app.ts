@@ -4,8 +4,17 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
+import cookieParser from "cookie-parser";
+import bcrypt from "bcryptjs";
 import { getPrisma } from "./prisma.js";
-import { Priority, TicketStatus } from "@prisma/client";
+import { Priority, TicketStatus, Role } from "@prisma/client";
+import {
+  authenticateToken,
+  optionalAuthenticate,
+  generateToken,
+  requireRole,
+  AuthRequest,
+} from "./auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +60,8 @@ const upload = multer({
 // Exported separately from app.listen() for Supertest
 export const app = express();
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 // ---------------------------------------------------------------------------
@@ -62,12 +72,219 @@ app.get("/api/health", (_req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// Development Requesters (Active only)
+// Authentication Endpoints (Lab 3)
+// ---------------------------------------------------------------------------
+
+// POST /api/auth/login
+app.post("/api/auth/login", async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+      return;
+    }
+
+    const prisma = getPrisma();
+    const user = await prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+      return;
+    }
+
+    if (!user.isActive) {
+      res.status(401).json({
+        success: false,
+        message: "Account is inactive. Please contact your administrator.",
+      });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+      return;
+    }
+
+    const authUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      mustChangePassword: user.mustChangePassword,
+    };
+
+    const token = generateToken(authUser);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        token,
+        user: authUser,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred during authentication",
+    });
+  }
+});
+
+// GET /api/auth/me
+app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        mustChangePassword: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user || !user.isActive) {
+      res.status(401).json({
+        success: false,
+        message: "User session is no longer active",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve user session",
+    });
+  }
+});
+
+// POST /api/auth/change-password
+app.post("/api/auth/change-password", authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      res.status(400).json({
+        success: false,
+        message: "Current password, new password, and confirmation are required",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({
+        success: false,
+        message: "New password and confirmation do not match",
+      });
+      return;
+    }
+
+    // Complexity: at least 8 chars, at least 1 upper, 1 lower, 1 number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      res.status(400).json({
+        success: false,
+        message: "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number",
+      });
+      return;
+    }
+
+    const prisma = getPrisma();
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isCurrentValid) {
+      res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+      return;
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newPasswordHash,
+        mustChangePassword: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        mustChangePassword: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Unable to update password",
+    });
+  }
+});
+
+// POST /api/auth/logout
+app.post("/api/auth/logout", (_req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Development Requesters (Active only — backward compatibility)
 // ---------------------------------------------------------------------------
 app.get("/api/requesters", async (_req: Request, res: Response) => {
   try {
-    const requesters = await getPrisma().requesterUser.findMany({
-      where: { isActive: true },
+    const requesters = await getPrisma().user.findMany({
+      where: { isActive: true, role: Role.REQUESTER },
       select: { id: true, name: true, email: true, isActive: true },
       orderBy: { id: "asc" },
     });
@@ -110,11 +327,11 @@ app.get("/api/related-systems", async (_req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // Create Ticket (POST /api/tickets)
 // ---------------------------------------------------------------------------
-app.post("/api/tickets", async (req: Request, res: Response) => {
+app.post("/api/tickets", optionalAuthenticate, async (req: AuthRequest, res: Response) => {
   try {
     const prisma = getPrisma();
     const requesterHeader = req.headers["x-requester-id"];
-    const requesterId = Number(req.body.requesterId || requesterHeader);
+    const requesterId = req.user ? req.user.id : Number(req.body.requesterId || requesterHeader);
     const { categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
 
     const validationErrors: Record<string, string> = {};
@@ -123,7 +340,7 @@ app.post("/api/tickets", async (req: Request, res: Response) => {
     if (!requesterId || isNaN(requesterId)) {
       validationErrors.requesterId = "Requester ID is required";
     } else {
-      const requester = await prisma.requesterUser.findUnique({
+      const requester = await prisma.user.findUnique({
         where: { id: requesterId },
       });
       if (!requester || !requester.isActive) {
@@ -235,11 +452,13 @@ app.post("/api/tickets", async (req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // My Tickets Query (GET /api/tickets)
 // ---------------------------------------------------------------------------
-app.get("/api/tickets", async (req: Request, res: Response) => {
+app.get("/api/tickets", optionalAuthenticate, async (req: AuthRequest, res: Response) => {
   try {
     const prisma = getPrisma();
     const requesterHeader = req.headers["x-requester-id"];
-    const requesterId = Number(req.query.requesterId || requesterHeader);
+    const requesterId = (req.user && req.user.role === Role.REQUESTER)
+      ? req.user.id
+      : Number(req.query.requesterId || requesterHeader);
 
     if (!requesterId || isNaN(requesterId)) {
       res.status(400).json({
@@ -352,12 +571,12 @@ app.get("/api/tickets", async (req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // Lab 2 Issue 5 — Ticket Detail (GET /api/tickets/:id)
 // ---------------------------------------------------------------------------
-app.get("/api/tickets/:id", async (req: Request, res: Response) => {
+app.get("/api/tickets/:id", optionalAuthenticate, async (req: AuthRequest, res: Response) => {
   try {
     const prisma = getPrisma();
     const ticketId = Number(req.params.id);
     const requesterHeader = req.headers["x-requester-id"];
-    const requesterId = Number(req.query.requesterId || requesterHeader);
+    const requesterId = req.user ? req.user.id : Number(req.query.requesterId || requesterHeader);
 
     if (isNaN(ticketId)) {
       res.status(400).json({ success: false, error: "Invalid ticket ID" });
@@ -392,8 +611,16 @@ app.get("/api/tickets/:id", async (req: Request, res: Response) => {
       return;
     }
 
-    // Multi-tenant ownership guard: ensure requester owns this ticket
-    if (requesterId && ticket.requesterId !== requesterId) {
+    // Role and ownership check
+    if (req.user) {
+      if (req.user.role === Role.REQUESTER && ticket.requesterId !== req.user.id) {
+        res.status(403).json({
+          success: false,
+          error: "You do not have permission to view this ticket",
+        });
+        return;
+      }
+    } else if (requesterId && ticket.requesterId !== requesterId) {
       res.status(403).json({
         success: false,
         error: "You do not have permission to view this ticket",
