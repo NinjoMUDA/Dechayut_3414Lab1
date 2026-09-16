@@ -111,3 +111,30 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+export interface StaffQueuePagination {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface StaffQueueResponse {
+  success: boolean;
+  data: Ticket[];
+  pagination: StaffQueuePagination;
+}
+
+export interface StaffQueueFilterParams {
+  search?: string;
+  category?: string;
+  status?: string;
+  requestedPriority?: string;
+  itPriority?: string;
+  ownerId?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+}
+

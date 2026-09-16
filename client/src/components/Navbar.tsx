@@ -91,16 +91,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
 
             {user?.role === "ADMIN" && (
-              <li className="nav-item">
-                <button
-                  className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                    currentView === "user-admin" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                  }`}
-                  onClick={() => onNavigate("user-admin")}
-                >
-                  👥 User Management
-                </button>
-              </li>
+              <>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "user-admin" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("user-admin")}
+                  >
+                    👥 User Management
+                  </button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("staff-queue")}
+                  >
+                    📥 Ticket Queue
+                  </button>
+                </li>
+              </>
             )}
           </ul>
 

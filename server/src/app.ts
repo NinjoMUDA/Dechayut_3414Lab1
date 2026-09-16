@@ -857,4 +857,123 @@ app.patch("/api/attachments/:id/soft-remove", async (req: Request, res: Response
   }
 });
 
+// ---------------------------------------------------------------------------
+// IT Staff Ticket Queue (GET /api/staff/tickets)
+// ---------------------------------------------------------------------------
+app.get(
+  "/api/staff/tickets",
+  authenticateToken,
+  requireRole([Role.IT_STAFF, Role.ADMIN]),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const {
+        search,
+        category,
+        status,
+        requestedPriority,
+        itPriority,
+        ownerId,
+        sortBy = "createdAt",
+        sortOrder = "desc",
+        page = "1",
+        pageSize = "10",
+      } = req.query;
+
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limit = Math.max(1, Math.min(100, parseInt(pageSize as string, 10) || 10));
+      const skip = (pageNum - 1) * limit;
+
+      const where: any = {};
+
+      // Search (ticketNumber or summary)
+      if (search && typeof search === "string" && search.trim() !== "") {
+        const queryStr = search.trim();
+        where.OR = [
+          { ticketNumber: { contains: queryStr, mode: "insensitive" } },
+          { summary: { contains: queryStr, mode: "insensitive" } },
+        ];
+      }
+
+      // Category filter (by ID)
+      if (category && typeof category === "string" && category !== "ALL" && category !== "") {
+        const catId = parseInt(category, 10);
+        if (!isNaN(catId)) {
+          where.categoryId = catId;
+        }
+      }
+
+      // Status filter
+      if (status && typeof status === "string" && status !== "ALL" && status !== "") {
+        where.currentStatus = status as TicketStatus;
+      }
+
+      // Requested Priority filter
+      if (requestedPriority && typeof requestedPriority === "string" && requestedPriority !== "ALL" && requestedPriority !== "") {
+        where.requestedPriority = requestedPriority as Priority;
+      }
+
+      // IT Priority filter
+      if (itPriority && typeof itPriority === "string" && itPriority !== "ALL" && itPriority !== "") {
+        if (itPriority === "NONE" || itPriority === "UNASSIGNED") {
+          where.itPriority = null;
+        } else {
+          where.itPriority = itPriority as Priority;
+        }
+      }
+
+      // Owner filter: "unassigned", "me", or specific staff user ID
+      if (ownerId && typeof ownerId === "string" && ownerId !== "ALL" && ownerId !== "") {
+        if (ownerId === "unassigned") {
+          where.ticketOwnerId = null;
+        } else if (ownerId === "me" && req.user) {
+          where.ticketOwnerId = req.user.id;
+        } else {
+          const parsedOwnerId = parseInt(ownerId, 10);
+          if (!isNaN(parsedOwnerId)) {
+            where.ticketOwnerId = parsedOwnerId;
+          }
+        }
+      }
+
+      // Sorting
+      const validSortFields = ["ticketNumber", "createdAt", "updatedAt"];
+      const sortField = validSortFields.includes(sortBy as string) ? (sortBy as string) : "createdAt";
+      const sortDir = (sortOrder as string)?.toLowerCase() === "asc" ? "asc" : "desc";
+      const orderBy = { [sortField]: sortDir };
+
+      const [total, tickets] = await Promise.all([
+        prisma.ticket.count({ where }),
+        prisma.ticket.findMany({
+          where,
+          include: {
+            category: { select: { id: true, name: true } },
+            relatedSystem: { select: { id: true, name: true } },
+            requester: { select: { id: true, name: true, email: true } },
+            ticketOwner: { select: { id: true, name: true, email: true } },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit) || 1;
+
+      res.json({
+        success: true,
+        data: tickets,
+        pagination: {
+          total,
+          page: pageNum,
+          pageSize: limit,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Unable to retrieve staff tickets" });
+    }
+  }
+);
+
 export default app;

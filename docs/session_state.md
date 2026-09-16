@@ -6,15 +6,15 @@
 - Lab 3: Issue #27 (Sprint 3 Engineering Contract & Specifications) completed and merged via PR #33 by @vienggg.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/28-auth-foundation` (branched from `lab3-staging`)
-- **Active Issue:** Issue #28 — Feature: Authentication Foundation & Requester Migration
+- **Branch:** `feature/29-staff-queue` (branched from `lab3-staging`)
+- **Active Issue:** Issue #29 — Feature: IT Staff Ticket Queue
 
 ## Kanban Status
 | Issue | Status |
 |---|---|
 | #27 Docs: Sprint 3 Engineering Contract & Specifications | Done |
-| #28 Feature: Authentication Foundation & Requester Migration | PR Review |
-| #29 Feature: IT Staff Ticket Queue | Backlog |
+| #28 Feature: Authentication Foundation & Requester Migration | Done |
+| #29 Feature: IT Staff Ticket Queue | PR Review |
 | #30 Feature: IT Staff Ticket Operations & Notes | Backlog |
 | #31 Feature: Administrator User Management | Backlog |
 | #32 Integration, System Verification & Release | Backlog |
@@ -34,19 +34,18 @@ toktickit/
 - Migrations: Lab 3 schema initialized with zero data loss (`20260916100000_init_lab3`)
 - Target Staging: `lab3-staging`
 
-## Task Checklist — Issue #28
-- [x] Create `feature/28-auth-foundation` branch
-- [x] Update Prisma schema: Add `Role`, `User`, `PublicComment`, `InternalNote` models, migrate Requester
-- [x] Implement database migration & idempotent seed data with bcrypt
-- [x] Implement Auth backend: `/api/auth/login`, `/api/auth/me`, `/api/auth/change-password`, `/api/auth/logout`
-- [x] Implement Auth middleware (`authenticateToken`, `requireRole`)
-- [x] Write server auth API tests (`server/tests/lab-03/auth.api.test.ts`, `server/tests/lab-03/authorization.api.test.ts`)
-- [x] Implement client Login & mandatory Change Password screens in Zen Green style
-- [x] Write client tests (`client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx`)
-- [x] Verify all tests pass (30 server + 27 client)
-- [x] Open Pull Request to `lab3-staging` (PR #34)
-- [ ] Link PR #34 to Issue #28 via Development panel
+## Task Checklist — Issue #29
+- [x] Checkout `lab3-staging`, pull latest, create `feature/29-staff-queue`
+- [x] Implement `GET /api/staff/tickets` with search, filter, sort, pagination, and role guards
+- [x] Write server integration tests (`server/tests/lab-03/staff-queue.api.test.ts`)
+- [x] Implement client API methods for staff tickets (`apiGetStaffTickets`)
+- [x] Implement `StaffTicketQueue.tsx` with Zen Green styling, filters, table/card views, and pagination
+- [x] Integrate Staff Queue route/view in `App.tsx` and navbar navigation
+- [x] Write client tests (`client/tests/lab-03/StaffTicketQueue.test.tsx`)
+- [x] Verify 100% test pass (37 server + 33 client)
+- [x] Commit, push, and open PR to `lab3-staging` (PR #35)
+- [ ] Link PR #35 to Issue #29 via Development panel
 - [ ] Peer review & merge by @vienggg
 
 ## Last Executed Command
-`gh pr create --base lab3-staging --head feature/28-auth-foundation` (Exit code: 0)
+`gh pr create --base lab3-staging --head feature/29-staff-queue` (Exit code: 0)

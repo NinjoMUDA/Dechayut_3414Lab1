@@ -8,6 +8,7 @@ import { RequesterSelector } from "./components/RequesterSelector.js";
 import { CreateTicket } from "./components/CreateTicket.js";
 import { MyTickets } from "./components/MyTickets.js";
 import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
+import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { checkSystem, Category, Ticket } from "./api.js";
 
 type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
@@ -28,6 +29,9 @@ function MainApp() {
         email: user.email,
         isActive: user.isActive,
       });
+      setCurrentView("my-tickets");
+    } else if (user && (user.role === "IT_STAFF" || user.role === "ADMIN")) {
+      setCurrentView("staff-queue");
     }
   }, [user]);
 
@@ -131,6 +135,16 @@ function MainApp() {
             onBack={() => {
               setCurrentView("my-tickets");
               setSelectedTicketId(null);
+            }}
+          />
+        )}
+
+        {/* Staff Ticket Queue View */}
+        {currentView === "staff-queue" && (
+          <StaffTicketQueue
+            onSelectTicket={(ticket) => {
+              setSelectedTicketId(ticket.id);
+              setCurrentView("ticket-detail");
             }}
           />
         )}
