@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|---|
 | [PR #33](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/33) | [Issue #27](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/27) | `docs/lab3-specs` | Docs: Sprint 3 Engineering Contract & Specifications | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. |
 | [PR #34](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/34) | [Issue #28](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/28) | `feature/28-auth-foundation` | Feature: Authentication Foundation & Requester Migration | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. Review comments exchanged. |
-| PR pending | [Issue #29](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/29) | `feature/29-staff-queue` | Feature: IT Staff Ticket Queue | Open | Pending | Staff ticket queue endpoint with multi-criteria filtering, responsive table and card UI, and 100% test pass. |
+| [PR #35](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/35) | [Issue #29](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/29) | `feature/29-staff-queue` | Feature: IT Staff Ticket Queue | Open | Pending | Staff ticket queue endpoint with multi-criteria filtering, responsive table and card UI, and 100% test pass. |
 
 ---
 
@@ -32,7 +32,7 @@
 - **Reviewer Comment:** "sud jod brother!!"
 - **Author Reply:** "Jeng Mark Brother!!"
 
-### PR pending (Feature: IT Staff Ticket Queue)
+### PR #35 (Feature: IT Staff Ticket Queue)
 - **Linked Issue:** Resolves [Issue #29](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/29)
 - **Reviewer:** `vienggg`
 - **Status:** Pending Review

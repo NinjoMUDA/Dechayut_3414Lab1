@@ -43,9 +43,9 @@ toktickit/
 - [x] Integrate Staff Queue route/view in `App.tsx` and navbar navigation
 - [x] Write client tests (`client/tests/lab-03/StaffTicketQueue.test.tsx`)
 - [x] Verify 100% test pass (37 server + 33 client)
-- [ ] Commit, push, and open PR to `lab3-staging`
-- [ ] Link PR to Issue #29 via Development panel
+- [x] Commit, push, and open PR to `lab3-staging` (PR #35)
+- [ ] Link PR #35 to Issue #29 via Development panel
 - [ ] Peer review & merge by @vienggg
 
 ## Last Executed Command
-`npm test` (37 server + 33 client passing)
+`gh pr create --base lab3-staging --head feature/29-staff-queue` (Exit code: 0)
