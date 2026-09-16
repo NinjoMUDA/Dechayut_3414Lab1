@@ -1473,15 +1473,25 @@ app.post(
         ? initialPassword.trim()
         : "Password123!";
 
+      // BR-09: Password complexity check (at least 8 chars, 1 upper, 1 lower, 1 number)
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(passwordToHash)) {
+        res.status(400).json({
+          success: false,
+          error: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number",
+        });
+        return;
+      }
+
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Check duplicate email (BR-08)
+      // Check duplicate email (BR-08 / AC-11 -> 409 Conflict)
       const existingUser = await prisma.user.findUnique({
         where: { email: normalizedEmail },
       });
 
       if (existingUser) {
-        res.status(400).json({ success: false, error: "Email already exists" });
+        res.status(409).json({ success: false, error: "Email already exists" });
         return;
       }
 
@@ -1543,13 +1553,22 @@ app.patch(
 
       const { name, email, role, isActive } = req.body;
 
-      // BR-10 (No Self-Deactivation): Admin cannot deactivate own account
-      if (req.user!.id === targetId && isActive === false) {
-        res.status(400).json({
-          success: false,
-          error: "You cannot deactivate your own account",
-        });
-        return;
+      // BR-10 & BR-27 (No Self-Deactivation or Self-Demotion)
+      if (req.user!.id === targetId) {
+        if (isActive === false) {
+          res.status(400).json({
+            success: false,
+            error: "You cannot deactivate your own account",
+          });
+          return;
+        }
+        if (role !== undefined && role !== Role.ADMIN) {
+          res.status(400).json({
+            success: false,
+            error: "You cannot demote your own account",
+          });
+          return;
+        }
       }
 
       // BR-11 (Last Administrator Guarantee): Cannot deactivate or demote last active admin
@@ -1594,7 +1613,7 @@ app.patch(
             where: { email: normalizedEmail },
           });
           if (duplicate) {
-            res.status(400).json({ success: false, error: "Email already exists" });
+            res.status(409).json({ success: false, error: "Email already exists" });
             return;
           }
         }
@@ -1663,10 +1682,12 @@ app.post(
       }
 
       const initialPassword = req.body?.initialPassword || "Password123!";
-      if (typeof initialPassword !== "string" || initialPassword.length < 6) {
+      // BR-09: Password complexity check (at least 8 chars, 1 upper, 1 lower, 1 number)
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (typeof initialPassword !== "string" || !passwordRegex.test(initialPassword)) {
         res.status(400).json({
           success: false,
-          error: "Password must be at least 6 characters",
+          error: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number",
         });
         return;
       }

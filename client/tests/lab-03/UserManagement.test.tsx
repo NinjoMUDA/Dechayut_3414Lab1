@@ -133,6 +133,11 @@ describe("UserManagement Component (UI-05)", () => {
 
     const activeSwitch = screen.getByTestId("edit-active-switch");
     expect(activeSwitch).toBeDisabled();
+
+    // BR-27: Self-demotion is also disabled
+    const roleSelect = screen.getByTestId("edit-role-select");
+    expect(roleSelect).toBeDisabled();
+    expect(screen.getByText(/Self-demotion disabled/i)).toBeInTheDocument();
   });
 
   it("enforces BR-11 protection when editing the sole active administrator", async () => {
@@ -149,10 +154,12 @@ describe("UserManagement Component (UI-05)", () => {
 
     fireEvent.click(screen.getByTestId("edit-btn-10"));
 
-    expect(screen.getByTestId("last-admin-warning")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Cannot deactivate or demote the system's last active Administrator/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("last-admin-warning")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Cannot deactivate or demote the system's last active Administrator/i)
+      ).toBeInTheDocument();
+    });
 
     const roleSelect = screen.getByTestId("edit-role-select");
     expect(roleSelect).toBeDisabled();

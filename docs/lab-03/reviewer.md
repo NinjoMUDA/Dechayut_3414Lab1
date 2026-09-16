@@ -49,4 +49,16 @@
 ### PR #37 (Feature: Administrator User Management)
 - **Linked Issue:** Resolves [Issue #31](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/31)
 - **Reviewer:** `vienggg`
-- **Status:** Ready for Review
+- **Status:** Review Requested Changes Resolved & Ready for Re-Review
+- **Reviewer Comment:**
+  1. Block Self-Demotion (FR-25 & BR-27) in backend and disable role dropdown on self-editing.
+  2. Fix Last-Admin Client Detection in UserManagement.tsx (avoid deriving global count from filtered array).
+  3. Enforce Password Complexity (BR-09) on creation and password reset (8+ chars, upper, lower, number).
+  4. HTTP Status Code Alignment: Return 409 Conflict on duplicate email creation/update.
+  5. Traceability Table Fix in tests.md: update requirement mappings to AC-11..14 and FR-20..26.
+- **Author Reply & Resolution:**
+  - Added self-demotion block (`req.user.id === targetId && role !== Role.ADMIN` -> 400) and disabled role selector when editing self in `UserManagement.tsx`.
+  - Replaced local filtered count with independent server query for global active admin count (`fetchGlobalAdminCount`).
+  - Enforced password complexity regex on `POST /api/admin/users` and `POST /api/admin/users/:id/reset-password`.
+  - Updated duplicate email status codes to `409 Conflict` across backend and tests.
+  - Updated `tests.md` traceability matrix and test table to map correctly to `AC-11..14` and `FR-20..26`. All 98 tests pass.

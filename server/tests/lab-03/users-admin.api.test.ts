@@ -97,7 +97,7 @@ describe("Lab 3 Admin User Management API", () => {
     expect(createRes.body.data.mustChangePassword).toBe(true);
     expect(createRes.body.data.passwordHash).toBeUndefined();
 
-    // Duplicate email check (BR-08)
+    // Duplicate email check (BR-08 / AC-11 -> 409 Conflict)
     const duplicateRes = await request(app)
       .post("/api/admin/users")
       .set("Authorization", `Bearer ${adminToken}`)
@@ -108,9 +108,23 @@ describe("Lab 3 Admin User Management API", () => {
         isActive: true,
       });
 
-    expect(duplicateRes.status).toBe(400);
+    expect(duplicateRes.status).toBe(409);
     expect(duplicateRes.body.success).toBe(false);
     expect(duplicateRes.body.error).toMatch(/email already exists/i);
+
+    // Password complexity check (BR-09)
+    const weakPassRes = await request(app)
+      .post("/api/admin/users")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        name: "Weak Pass User",
+        email: `weak.${Date.now()}@example.com`,
+        role: "REQUESTER",
+        isActive: true,
+        initialPassword: "weak",
+      });
+    expect(weakPassRes.status).toBe(400);
+    expect(weakPassRes.body.error).toMatch(/at least 8 characters/i);
   });
 
   // API-18: Admin updates user details
@@ -142,10 +156,21 @@ describe("Lab 3 Admin User Management API", () => {
     expect(updateRes.body.data.name).toBe("Updated Name");
     expect(updateRes.body.data.role).toBe("IT_STAFF");
     expect(updateRes.body.data.isActive).toBe(false);
+
+    // Duplicate email update returns 409 Conflict
+    const dupUpdateRes = await request(app)
+      .patch(`/api/admin/users/${targetUserId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        email: "john.smith@toktickit.com",
+      });
+    expect(dupUpdateRes.status).toBe(409);
+    expect(dupUpdateRes.body.error).toMatch(/email already exists/i);
   });
 
-  // API-19: Admin attempts self-deactivation (BR-10)
-  it("API-19: Admin attempts self-deactivation returns 400 Bad Request", async () => {
+  // API-19: Admin attempts self-deactivation & self-demotion (BR-10 & BR-27)
+  it("API-19: Admin attempts self-deactivation or self-demotion returns 400 Bad Request", async () => {
+    // 1. Self-deactivation blocked (BR-10)
     const selfDeactivateRes = await request(app)
       .patch(`/api/admin/users/${adminUser.id}`)
       .set("Authorization", `Bearer ${adminToken}`)
@@ -156,6 +181,18 @@ describe("Lab 3 Admin User Management API", () => {
     expect(selfDeactivateRes.status).toBe(400);
     expect(selfDeactivateRes.body.success).toBe(false);
     expect(selfDeactivateRes.body.error).toMatch(/cannot deactivate your own account/i);
+
+    // 2. Self-demotion blocked (BR-27 / FR-25)
+    const selfDemoteRes = await request(app)
+      .patch(`/api/admin/users/${adminUser.id}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        role: "IT_STAFF",
+      });
+
+    expect(selfDemoteRes.status).toBe(400);
+    expect(selfDemoteRes.body.success).toBe(false);
+    expect(selfDemoteRes.body.error).toMatch(/cannot demote your own account/i);
   });
 
   // API-20: Admin attempts to deactivate or demote last active Admin (BR-11)
@@ -231,6 +268,16 @@ describe("Lab 3 Admin User Management API", () => {
       where: { id: targetUserId },
       data: { mustChangePassword: false },
     });
+
+    // Weak reset password rejected (BR-09)
+    const weakResetRes = await request(app)
+      .post(`/api/admin/users/${targetUserId}/reset-password`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        initialPassword: "weak",
+      });
+    expect(weakResetRes.status).toBe(400);
+    expect(weakResetRes.body.error).toMatch(/at least 8 characters/i);
 
     const resetRes = await request(app)
       .post(`/api/admin/users/${targetUserId}/reset-password`)

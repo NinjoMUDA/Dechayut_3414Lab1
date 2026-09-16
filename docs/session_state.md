@@ -48,8 +48,8 @@ toktickit/
 - [x] Integrate User Management in `App.tsx` (view: `user-admin`)
 - [x] Write client tests (`UserManagement.test.tsx`)
 - [x] Verify 100% tests pass (54 server + 44 client = 98 total)
-- [x] Update docs (`tests.md`, `reviewer.md`, `ai-use.md`, `session_state.md`)
-- [ ] Move card to PR Review, peer review & merge by @vienggg
+- [x] Address review feedback: self-demotion block (BR-27), global admin detection, password complexity (BR-09), 409 Conflict (AC-11), traceability mapping (AC-11..14)
+- [ ] Move card back to PR Review, peer review approval & merge by @vienggg
 
 ## Last Executed Command
 `npm test` (Exit code: 0, 98/98 tests passing)

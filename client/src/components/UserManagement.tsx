@@ -86,12 +86,22 @@ export const UserManagement: React.FC = () => {
     }
   }, [search, roleFilter, statusFilter, token]);
 
+  const [globalActiveAdminCount, setGlobalActiveAdminCount] = useState<number>(1);
+
+  const fetchGlobalAdminCount = useCallback(async () => {
+    try {
+      const activeAdmins = await apiGetAdminUsers({ role: "ADMIN", isActive: true }, token);
+      const count = activeAdmins.filter((u) => u.role === "ADMIN" && u.isActive).length;
+      setGlobalActiveAdminCount(count);
+    } catch {
+      // fallback
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
-
-  // Compute active admin count across currently known users
-  const activeAdminCount = users.filter((u) => u.role === "ADMIN" && u.isActive).length;
+    fetchGlobalAdminCount();
+  }, [fetchUsers, fetchGlobalAdminCount]);
 
   // Open Create Modal
   const handleOpenCreate = () => {
@@ -116,6 +126,13 @@ export const UserManagement: React.FC = () => {
       if (!createForm.name.trim()) throw new Error("Name is required");
       if (!createForm.email.trim()) throw new Error("Email is required");
 
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(createForm.initialPassword)) {
+        throw new Error(
+          "Initial password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+        );
+      }
+
       await apiCreateAdminUser(
         {
           name: createForm.name.trim(),
@@ -130,6 +147,7 @@ export const UserManagement: React.FC = () => {
       setIsCreateOpen(false);
       setSuccessMsg(`User "${createForm.name}" created successfully.`);
       fetchUsers();
+      fetchGlobalAdminCount();
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : "Failed to create user");
     } finally {
@@ -148,6 +166,7 @@ export const UserManagement: React.FC = () => {
     });
     setEditError(null);
     setIsEditOpen(true);
+    fetchGlobalAdminCount();
   };
 
   // Submit Edit
@@ -161,16 +180,21 @@ export const UserManagement: React.FC = () => {
       if (!editForm.name.trim()) throw new Error("Name is required");
       if (!editForm.email.trim()) throw new Error("Email is required");
 
-      // BR-10 client guard
-      if (currentUser && editingUser.id === currentUser.id && !editForm.isActive) {
-        throw new Error("You cannot deactivate your own account");
+      // BR-10 & BR-27 client guard (no self-deactivation or self-demotion)
+      if (currentUser && editingUser.id === currentUser.id) {
+        if (!editForm.isActive) {
+          throw new Error("You cannot deactivate your own account");
+        }
+        if (editForm.role !== "ADMIN") {
+          throw new Error("You cannot demote your own account");
+        }
       }
 
       // BR-11 client guard
       if (
         editingUser.role === "ADMIN" &&
         editingUser.isActive &&
-        activeAdminCount <= 1 &&
+        globalActiveAdminCount <= 1 &&
         (!editForm.isActive || editForm.role !== "ADMIN")
       ) {
         throw new Error("Cannot deactivate or demote the last active Administrator");
@@ -190,6 +214,7 @@ export const UserManagement: React.FC = () => {
       setIsEditOpen(false);
       setSuccessMsg(`User "${editForm.name}" updated successfully.`);
       fetchUsers();
+      fetchGlobalAdminCount();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : "Failed to update user");
     } finally {
@@ -213,14 +238,18 @@ export const UserManagement: React.FC = () => {
     setResetError(null);
 
     try {
-      if (!resetPassword || resetPassword.length < 6) {
-        throw new Error("Temporary password must be at least 6 characters");
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!resetPassword || !passwordRegex.test(resetPassword)) {
+        throw new Error(
+          "Temporary password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+        );
       }
 
       await apiResetUserPassword(resetTargetUser.id, resetPassword, token);
       setIsResetOpen(false);
       setSuccessMsg(`Password reset successfully for ${resetTargetUser.name}.`);
       fetchUsers();
+      fetchGlobalAdminCount();
     } catch (err) {
       setResetError(err instanceof Error ? err.message : "Failed to reset password");
     } finally {
@@ -234,7 +263,7 @@ export const UserManagement: React.FC = () => {
     editingUser &&
     editingUser.role === "ADMIN" &&
     editingUser.isActive &&
-    activeAdminCount <= 1;
+    globalActiveAdminCount <= 1;
 
   const renderRoleBadge = (role: Role) => {
     switch (role) {
@@ -723,14 +752,19 @@ export const UserManagement: React.FC = () => {
                       className="form-select form-select-sm"
                       value={editForm.role}
                       onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })}
-                      disabled={editLoading || !!isEditingLastAdmin}
+                      disabled={editLoading || isEditingSelf || !!isEditingLastAdmin}
                       data-testid="edit-role-select"
                     >
                       <option value="REQUESTER">Requester</option>
                       <option value="IT_STAFF">IT Staff</option>
                       <option value="ADMIN">Administrator</option>
                     </select>
-                    {isEditingLastAdmin && (
+                    {isEditingSelf && (
+                      <div className="form-text small text-muted">
+                        Self-demotion disabled: you cannot change your own role.
+                      </div>
+                    )}
+                    {isEditingLastAdmin && !isEditingSelf && (
                       <div className="form-text small text-danger">
                         Demotion disabled: at least one active Administrator must remain.
                       </div>
