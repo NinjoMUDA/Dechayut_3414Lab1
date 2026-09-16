@@ -47,9 +47,9 @@ toktickit/
 - [x] Integrate Staff Detail view in `App.tsx`
 - [x] Write client tests (`StaffTicketDetail.test.tsx`)
 - [x] Verify 100% test pass (47 server + 39 client)
-- [ ] Commit, push, and open PR to `lab3-staging`
-- [ ] Link PR to Issue #30 via Development panel
+- [x] Commit, push, and open PR to `lab3-staging` (PR #36)
+- [ ] Link PR #36 to Issue #30 via Development panel
 - [ ] Peer review & merge by @vienggg
 
 ## Last Executed Command
-`npm test` (47 server + 39 client passing)
+`gh pr create --base lab3-staging --head feature/30-ticket-operations` (Exit code: 0)
