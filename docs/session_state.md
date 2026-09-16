@@ -6,8 +6,8 @@
 - Lab 3: Issue #27 (Sprint 3 Engineering Contract & Specifications) completed and merged via PR #33 by @vienggg.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/31-admin-user-management` (branched from `lab3-staging`)
-- **Active Issue:** Issue #31 — Feature: Administrator User Management
+- **Branch:** `feature/32-integration-verification` (branched from `lab3-staging`)
+- **Active Issue:** Issue #32 — Release: Lab 3 E2E Tests, Visual Evidence & Final Integration
 
 ## Kanban Status
 | Issue | Status |
@@ -16,8 +16,8 @@
 | #28 Feature: Authentication Foundation & Requester Migration | Done |
 | #29 Feature: IT Staff Ticket Queue | Done |
 | #30 Feature: IT Staff Ticket Operations & Notes | Done |
-| #31 Feature: Administrator User Management | PR Review |
-| #32 Integration, System Verification & Release | Backlog |
+| #31 Feature: Administrator User Management | Done |
+| #32 Integration, System Verification & Release | Started |
 
 ## Project Structure
 ```
@@ -34,22 +34,18 @@ toktickit/
 - Migrations: Lab 3 schema initialized with zero data loss (`20260916100000_init_lab3`)
 - Target Staging: `lab3-staging`
 
-## Task Checklist — Issue #31
-- [x] Checkout `lab3-staging`, pull latest, create `feature/31-admin-user-management`
-- [x] Push branch and open early PR to `lab3-staging` (PR #37)
-- [x] Link PR to Issue #31 via Development panel and move card to Started
-- [x] Implement Admin User Management API:
-  - `GET /api/admin/users` (search, role filter, active filter, admin-only guard)
-  - `POST /api/admin/users` (create user, bcrypt hash, duplicate check)
-  - `PATCH /api/admin/users/:id` (BR-10 self-deactivation block, BR-11 last active admin protection)
-  - `POST /api/admin/users/:id/reset-password` (reset password + set mustChangePassword: true)
-- [x] Write server integration tests (`users-admin.api.test.ts`)
-- [x] Implement `UserManagement.tsx` component (Zen Green, responsive table/cards, modals, BR-10/11 safety)
-- [x] Integrate User Management in `App.tsx` (view: `user-admin`)
-- [x] Write client tests (`UserManagement.test.tsx`)
-- [x] Verify 100% tests pass (54 server + 44 client = 98 total)
-- [x] Address review feedback: self-demotion block (BR-27), global admin detection, password complexity (BR-09), 409 Conflict (AC-11), traceability mapping (AC-11..14)
-- [ ] Move card back to PR Review, peer review approval & merge by @vienggg
+## Task Checklist — Issue #32
+- [x] Checkout `lab3-staging`, pull latest, create `feature/32-integration-verification`
+- [ ] Push branch and open early PR to `lab3-staging`
+- [ ] Link PR to Issue #32 via Development panel and move card to Started
+- [ ] Implement E2E integration test suites in `client/tests/lab-03/`:
+  - `Authentication.e2e.test.tsx` (E2E-01 & E2E-02)
+  - `StaffTicketFlow.e2e.test.tsx` (E2E-03)
+  - `UserAdministration.e2e.test.tsx` (E2E-04)
+- [ ] Capture visual evidence / screenshots for all roles and responsive viewports
+- [ ] Update final documentation (`docs/lab-03/tests.md`, `reviewer.md`, `ai-use.md`, `session_state.md`)
+- [ ] Verify 100% test pass rate across all suites
+- [ ] Move card to PR Review, peer review approval & merge by @vienggg
 
 ## Last Executed Command
-`npm test` (Exit code: 0, 98/98 tests passing)
+`git checkout -b feature/32-integration-verification` (Exit code: 0)
