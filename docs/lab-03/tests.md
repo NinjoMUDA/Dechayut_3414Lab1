@@ -71,6 +71,15 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 - [x] **Zen Green Aesthetics:** Strict adherence to `#006B3C` primary palette and clean modern Bootstrap presentation.
 - [x] **Accessibility & ARIA:** Valid labels, color contrast compliant, explicit focus rings, and screen-reader accessible error messages.
 
+### 4.1 Visual Evidence & UI Screenshots
+The following screenshots document the multi-role interfaces and Zen Green design system:
+
+| Role / View | Description | Screenshot Evidence |
+|---|---|---|
+| **Requester & Auth** | Requester view and authentication barrier | ![Requester View & Authentication](screenshots/01_auth_requester.png) |
+| **IT Staff Queue** | IT Staff ticket queue, triage filters, status badges | ![IT Staff Ticket Queue](screenshots/02_staff_queue.png) |
+| **Admin User Management** | User administration, role management, reset & safety guards | ![Administrator User Management](screenshots/03_admin_users.png) |
+
 ---
 
 ## 5. Test Execution Commands

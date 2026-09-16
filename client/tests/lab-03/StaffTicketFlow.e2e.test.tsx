@@ -63,29 +63,38 @@ describe("Lab 3 E2E — IT Staff Triage Workflow (E2E-03)", () => {
     vi.spyOn(api, "apiGetNotes").mockResolvedValue([]);
   });
 
-  it("completes full IT Staff flow: Queue -> Open Detail -> Claim Ownership -> Set IT Priority -> Status Transition -> Note & Comment", async () => {
+  it("completes full IT Staff flow: Queue -> Open Detail -> Claim Ownership -> Set IT Priority -> Status Transition -> Note & Comment -> Resolve & Close", async () => {
     const updatedTicket: api.Ticket = {
       ...initialTicket,
       ticketOwnerId: 50,
-      ticketOwner: { id: 50, name: "Michael Staff" },
+      ticketOwner: staffUser,
       itPriority: "URGENT",
       currentStatus: "IN_PROGRESS",
+    };
+
+    const resolvedTicket: api.Ticket = {
+      ...updatedTicket,
+      currentStatus: "RESOLVED",
+      resolutionSummary: "Replaced faulty switch with new gigabit switch on floor 3.",
+    };
+
+    const closedTicket: api.Ticket = {
+      ...resolvedTicket,
+      currentStatus: "CLOSED",
     };
 
     const updateSpy = vi.spyOn(api, "apiUpdateStaffTicket").mockResolvedValue(updatedTicket);
     const addNoteSpy = vi.spyOn(api, "apiAddNote").mockResolvedValue({
       id: 901,
       ticketId: 701,
-      authorId: 50,
-      author: { id: 50, name: "Michael Staff", role: "IT_STAFF" },
+      author: staffUser,
       content: "Investigating network switch logs on floor 3.",
       createdAt: "2026-09-16T10:15:00.000Z",
     });
     const addCommentSpy = vi.spyOn(api, "apiAddComment").mockResolvedValue({
       id: 801,
       ticketId: 701,
-      authorId: 50,
-      author: { id: 50, name: "Michael Staff", role: "IT_STAFF" },
+      author: staffUser,
       content: "We are currently investigating the AP access points.",
       createdAt: "2026-09-16T10:20:00.000Z",
     });
@@ -177,5 +186,73 @@ describe("Lab 3 E2E — IT Staff Triage Workflow (E2E-03)", () => {
         expect.anything()
       );
     });
+
+    // 9. Transition from IN_PROGRESS -> RESOLVED with resolution summary
+    updateSpy.mockResolvedValue(resolvedTicket);
+    fireEvent.change(statusSelect, { target: { value: "RESOLVED" } });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Resolution Summary/i)).toBeInTheDocument();
+    });
+
+    const resolutionTextarea = screen.getByLabelText(/Resolution Summary/i);
+    fireEvent.change(resolutionTextarea, {
+      target: { value: "Replaced faulty switch with new gigabit switch on floor 3." },
+    });
+
+    fireEvent.click(saveOpsBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith(
+        701,
+        expect.objectContaining({
+          currentStatus: "RESOLVED",
+          resolutionSummary: "Replaced faulty switch with new gigabit switch on floor 3.",
+        }),
+        expect.anything()
+      );
+    });
+
+    // 10. Transition from RESOLVED -> CLOSED
+    updateSpy.mockResolvedValue(closedTicket);
+    fireEvent.change(statusSelect, { target: { value: "CLOSED" } });
+    fireEvent.click(saveOpsBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith(
+        701,
+        expect.objectContaining({
+          currentStatus: "CLOSED",
+        }),
+        expect.anything()
+      );
+    });
+  });
+
+  it("enforces permitted workflow status transitions and rejects direct closure from NEW", async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("staff-queue-row-701")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("staff-queue-row-701"));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Status Transition/i)).toBeInTheDocument();
+    });
+
+    const statusSelect = screen.getByLabelText(/Status Transition/i) as HTMLSelectElement;
+    const availableOptionValues = Array.from(statusSelect.options).map((o) => o.value);
+
+    // Permitted from NEW: NEW (current), OPEN, IN_PROGRESS, CANCELLED
+    expect(availableOptionValues).toContain("NEW");
+    expect(availableOptionValues).toContain("OPEN");
+    expect(availableOptionValues).toContain("IN_PROGRESS");
+    expect(availableOptionValues).toContain("CANCELLED");
+
+    // Illegal from NEW: RESOLVED and CLOSED cannot be selected directly from NEW
+    expect(availableOptionValues).not.toContain("RESOLVED");
+    expect(availableOptionValues).not.toContain("CLOSED");
   });
 });

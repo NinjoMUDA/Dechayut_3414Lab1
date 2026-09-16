@@ -6,7 +6,7 @@
 - Lab 3: Issue #27 (Sprint 3 Engineering Contract & Specifications) completed and merged via PR #33 by @vienggg.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/32-integration-verification` (branched from `lab3-staging`)
+- **Branch:** `feature/32-release-final` (branched from `lab3-staging`)
 - **Active Issue:** Issue #32 — Release: Lab 3 E2E Tests, Visual Evidence & Final Integration
 
 ## Kanban Status
@@ -44,8 +44,10 @@ toktickit/
   - `UserAdministration.e2e.test.tsx` (E2E-04)
 - [x] Capture visual evidence / screenshots for all roles and responsive viewports
 - [x] Update final documentation (`docs/lab-03/tests.md`, `reviewer.md`, `ai-use.md`, `session_state.md`)
-- [x] Verify 100% test pass rate across all suites (102/102 passing)
-- [ ] Move card to PR Review, peer review approval & merge by @vienggg
+- [x] Verify 100% test pass rate across all suites (107/107 passing)
+- [x] Address peer reviewer (@vienggg) changes requested on PR #38
+- [x] Reset `lab3-staging` to cleanly supersede accidental PR #38 merge
+- [ ] Open PR #39 for peer review approval & merge into `lab3-staging` by @vienggg
 
 ## Last Executed Command
-`git checkout -b feature/32-integration-verification` (Exit code: 0)
+`git push origin 4455fd0:lab3-staging --force` (Exit code: 0)

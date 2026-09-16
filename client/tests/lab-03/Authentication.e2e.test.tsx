@@ -38,7 +38,7 @@ describe("Lab 3 E2E — Authentication & Password Gate (E2E-01, E2E-02)", () => 
       user: regularUser,
     });
     vi.spyOn(api, "apiGetMe").mockResolvedValue(regularUser);
-    vi.spyOn(api, "apiLogout").mockResolvedValue({ success: true, message: "Logged out" });
+    vi.spyOn(api, "apiLogout").mockResolvedValue(undefined);
 
     render(<App />);
 
@@ -75,7 +75,102 @@ describe("Lab 3 E2E — Authentication & Password Gate (E2E-01, E2E-02)", () => 
     });
   });
 
-  it("E2E-02: First login with temporary password gate -> mandatory change password -> dashboard", async () => {
+  it("E2E-01B: Session persistence rehydrates authenticated user from localStorage without re-login", async () => {
+    const existingUser: api.User = {
+      id: 105,
+      name: "Persisted User",
+      email: "persisted@example.com",
+      role: "REQUESTER",
+      isActive: true,
+      mustChangePassword: false,
+    };
+
+    localStorage.setItem("toktickit_token", "persisted-token");
+    vi.spyOn(api, "apiGetMe").mockResolvedValue(existingUser);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Persisted User")).toBeInTheDocument();
+      expect(screen.getByText("📋 My Tickets")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Sign in to your account")).not.toBeInTheDocument();
+  });
+
+  it("E2E-01C: Role-based navigation redirects IT Staff to staff queue and Admin to user management", async () => {
+    const staffUser: api.User = {
+      id: 201,
+      name: "Marcus Staff",
+      email: "marcus@toktickit.com",
+      role: "IT_STAFF",
+      isActive: true,
+      mustChangePassword: false,
+    };
+
+    const loginSpy = vi.spyOn(api, "apiLogin").mockResolvedValue({
+      token: "staff-token",
+      user: staffUser,
+    });
+    vi.spyOn(api, "apiGetMe").mockResolvedValue(staffUser);
+    vi.spyOn(api, "apiGetStaffTickets").mockResolvedValue({
+      success: true,
+      data: [],
+      pagination: { page: 1, pageSize: 10, total: 0, totalPages: 1 },
+    });
+
+    const { unmount } = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: "marcus@toktickit.com" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter your password/i), { target: { value: "StaffPass123!" } });
+    fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Ticket Queue" })).toBeInTheDocument();
+      expect(screen.getByText("Marcus Staff")).toBeInTheDocument();
+      expect(screen.getByText("IT Staff")).toBeInTheDocument();
+    });
+
+    unmount();
+    localStorage.clear();
+
+    const adminUser: api.User = {
+      id: 301,
+      name: "Grace Admin",
+      email: "grace@toktickit.com",
+      role: "ADMIN",
+      isActive: true,
+      mustChangePassword: false,
+    };
+
+    loginSpy.mockResolvedValue({
+      token: "admin-token",
+      user: adminUser,
+    });
+    vi.spyOn(api, "apiGetMe").mockResolvedValue(adminUser);
+    vi.spyOn(api, "apiGetAdminUsers").mockResolvedValue([adminUser]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: "grace@toktickit.com" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter your password/i), { target: { value: "AdminPass123!" } });
+    fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /User Management/i })).toBeInTheDocument();
+      expect(screen.getAllByText("Grace Admin").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(/Administrator/i).length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("E2E-02: First login with temporary password gate -> mandatory change password -> dashboard & subsequent login", async () => {
     const gatedUser: api.User = {
       id: 102,
       name: "Robert Initial",
@@ -90,15 +185,15 @@ describe("Lab 3 E2E — Authentication & Password Gate (E2E-01, E2E-02)", () => 
       mustChangePassword: false,
     };
 
-    vi.spyOn(api, "apiLogin").mockResolvedValue({
+    const loginSpy = vi.spyOn(api, "apiLogin").mockResolvedValue({
       token: "temp-session-token",
       user: gatedUser,
     });
     vi.spyOn(api, "apiGetMe").mockResolvedValue(gatedUser);
+    vi.spyOn(api, "apiLogout").mockResolvedValue(undefined);
     vi.spyOn(api, "apiChangePassword").mockImplementation(async () => {
-      // Upon successful password change, update getMe mock
       vi.spyOn(api, "apiGetMe").mockResolvedValue(updatedUser);
-      return { success: true, message: "Password updated successfully" };
+      return { mustChangePassword: false };
     });
 
     render(<App />);
@@ -142,5 +237,30 @@ describe("Lab 3 E2E — Authentication & Password Gate (E2E-01, E2E-02)", () => 
       expect(screen.getByText("Robert Initial")).toBeInTheDocument();
       expect(screen.getByText("📋 My Tickets")).toBeInTheDocument();
     });
+
+    // 6. User logs out and performs subsequent login with new password
+    const logoutBtn = screen.getByRole("button", { name: /Log out/i });
+    fireEvent.click(logoutBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+    });
+
+    // Next login: returns updatedUser with mustChangePassword = false
+    loginSpy.mockResolvedValue({
+      token: "new-session-token",
+      user: updatedUser,
+    });
+    vi.spyOn(api, "apiGetMe").mockResolvedValue(updatedUser);
+
+    fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: "robert@example.com" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter your password/i), { target: { value: "NewSecurePass123!" } });
+    fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Robert Initial")).toBeInTheDocument();
+      expect(screen.getByText("📋 My Tickets")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Change Your Password")).not.toBeInTheDocument();
   });
 });

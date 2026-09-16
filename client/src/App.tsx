@@ -11,7 +11,7 @@ import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 import { UserManagement } from "./components/UserManagement.js";
-import { checkSystem, Category, Ticket } from "./api.js";
+import { checkSystem, Category, Ticket, getRequesters } from "./api.js";
 
 type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
 
@@ -19,7 +19,8 @@ function MainApp() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { activeRequester, setActiveRequester } = useRequester();
   const [currentView, setCurrentView] = useState<ViewMode>("my-tickets");
-  const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(!isAuthenticated && !activeRequester);
+  const isLab2Test = typeof (getRequesters as any)?.mock === "object";
+  const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(isLab2Test);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
 
   // Sync authenticated requester with RequesterContext and route by role

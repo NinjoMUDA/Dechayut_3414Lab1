@@ -162,4 +162,89 @@ describe("Lab 3 E2E — Administrator User Management Lifecycle (E2E-04)", () =>
       expect(screen.getByTestId("edit-role-select")).toBeDisabled();
     });
   });
+
+  it("filters user list by keyword search, role, and active status", async () => {
+    const listSpy = vi.spyOn(api, "apiGetAdminUsers").mockResolvedValue([
+      {
+        id: 3,
+        name: "Michael Staff",
+        email: "michael.staff@toktickit.com",
+        role: "IT_STAFF",
+        isActive: true,
+        mustChangePassword: false,
+      },
+    ]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/Search by name or email/i)).toBeInTheDocument();
+    });
+
+    // Search by name
+    const searchInput = screen.getByPlaceholderText(/Search by name or email/i);
+    fireEvent.change(searchInput, { target: { value: "Michael" } });
+
+    await waitFor(() => {
+      expect(listSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ search: "Michael" }),
+        expect.anything()
+      );
+    });
+
+    // Filter by Role
+    const roleSelect = screen.getByLabelText(/Filter by role/i);
+    fireEvent.change(roleSelect, { target: { value: "IT_STAFF" } });
+
+    await waitFor(() => {
+      expect(listSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ role: "IT_STAFF" }),
+        expect.anything()
+      );
+    });
+
+    // Filter by Status
+    const statusSelect = screen.getByLabelText(/Filter by status/i);
+    fireEvent.change(statusSelect, { target: { value: "ACTIVE" } });
+
+    await waitFor(() => {
+      expect(listSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ isActive: true }),
+        expect.anything()
+      );
+    });
+  });
+
+  it("enforces BR-11 last active administrator protection when editing the sole remaining admin", async () => {
+    const soleAdmin: api.User = {
+      id: 2,
+      name: "Second Admin",
+      email: "second.admin@toktickit.com",
+      role: "ADMIN",
+      isActive: true,
+      mustChangePassword: false,
+    };
+
+    // Mock global active admin count query returning only 1 admin
+    vi.spyOn(api, "apiGetAdminUsers").mockImplementation(async (params) => {
+      if (params?.role === "ADMIN" && params?.isActive === true) {
+        return [soleAdmin];
+      }
+      return [soleAdmin];
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("edit-btn-2")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("edit-btn-2"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("last-admin-warning")).toBeInTheDocument();
+      expect(screen.getByTestId("edit-active-switch")).toBeDisabled();
+      expect(screen.getByTestId("edit-role-select")).toBeDisabled();
+    });
+  });
 });

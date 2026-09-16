@@ -5,8 +5,8 @@ import {
   Category,
   getCategories,
   apiGetStaffTickets,
-  StaffQueuePagination,
 } from "../api.js";
+import { StaffQueuePagination } from "../types/index.js";
 
 interface StaffTicketQueueProps {
   onSelectTicket?: (ticket: Ticket) => void;
