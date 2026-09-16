@@ -1,19 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext.js";
 import { RequesterProvider, useRequester } from "./context/RequesterContext.js";
 import { Navbar } from "./components/Navbar.js";
+import { Login } from "./components/Login.js";
+import { ChangePassword } from "./components/ChangePassword.js";
 import { RequesterSelector } from "./components/RequesterSelector.js";
 import { CreateTicket } from "./components/CreateTicket.js";
 import { MyTickets } from "./components/MyTickets.js";
 import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { checkSystem, Category, Ticket } from "./api.js";
 
-type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail";
+type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
 
 function MainApp() {
-  const { activeRequester } = useRequester();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { activeRequester, setActiveRequester } = useRequester();
   const [currentView, setCurrentView] = useState<ViewMode>("my-tickets");
   const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(!activeRequester);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+
+  // Sync authenticated requester with RequesterContext
+  useEffect(() => {
+    if (user && user.role === "REQUESTER") {
+      setActiveRequester({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isActive: user.isActive,
+      });
+    }
+  }, [user]);
+
+  const isAuthed = isAuthenticated || !!activeRequester;
 
   // Lab 1 System Status check state
   const [systemStatus, setSystemStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -38,13 +56,42 @@ function MainApp() {
     setCurrentView("ticket-detail");
   };
 
+  if (isLoading) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+        <div className="spinner-border text-success" role="status">
+          <span className="visually-hidden">Loading TokTickIT...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthed) {
+    return (
+      <>
+        <Login />
+        {isSelectorOpen && (
+          <RequesterSelector
+            isOpen={isSelectorOpen}
+            onClose={() => setIsSelectorOpen(false)}
+            canCancel={false}
+          />
+        )}
+      </>
+    );
+  }
+
+  if (user?.mustChangePassword) {
+    return <ChangePassword />;
+  }
+
   return (
     <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "var(--color-page-bg)" }}>
       {/* Zen Green Navigation Header */}
       <Navbar
         currentView={currentView}
         onNavigate={(view) => {
-          setCurrentView(view);
+          setCurrentView(view as ViewMode);
           setSelectedTicketId(null);
         }}
         onOpenSelector={() => setIsSelectorOpen(true)}
@@ -52,24 +99,6 @@ function MainApp() {
 
       {/* Main Content Area */}
       <main className="container-fluid px-3 px-md-4 py-4 flex-grow-1" style={{ maxWidth: 1200 }}>
-        {/* If no requester is selected, prompt selection */}
-        {!activeRequester && (
-          <div className="alert alert-warning shadow-sm mb-4 d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center gap-2">
-              <span className="fs-5">⚠️</span>
-              <span>
-                <strong>No Development Requester selected.</strong> Please select an active requester to access ticketing features.
-              </span>
-            </div>
-            <button
-              className="btn btn-zen-primary btn-sm"
-              onClick={() => setIsSelectorOpen(true)}
-            >
-              Select Requester
-            </button>
-          </div>
-        )}
-
         {/* Create Ticket View */}
         {currentView === "create-ticket" && (
           <CreateTicket
@@ -170,20 +199,24 @@ function MainApp() {
         </div>
       </main>
 
-      {/* Requester Selector Modal */}
-      <RequesterSelector
-        isOpen={isSelectorOpen || !activeRequester}
-        onClose={() => setIsSelectorOpen(false)}
-        canCancel={!!activeRequester}
-      />
+      {/* Requester Selector Modal (Fallback for Lab 2 backwards compatibility) */}
+      {isSelectorOpen && (
+        <RequesterSelector
+          isOpen={isSelectorOpen}
+          onClose={() => setIsSelectorOpen(false)}
+          canCancel={true}
+        />
+      )}
     </div>
   );
 }
 
 export default function App() {
   return (
-    <RequesterProvider>
-      <MainApp />
-    </RequesterProvider>
+    <AuthProvider>
+      <RequesterProvider>
+        <MainApp />
+      </RequesterProvider>
+    </AuthProvider>
   );
 }

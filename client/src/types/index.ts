@@ -1,5 +1,25 @@
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-export type TicketStatus = "NEW" | "OPEN" | "IN_PROGRESS" | "PENDING" | "RESOLVED" | "CLOSED" | "CANCELLED";
+export type TicketStatus =
+  | "NEW"
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "PENDING"
+  | "WAITING_FOR_REQUESTER"
+  | "RESOLVED"
+  | "CLOSED"
+  | "REOPENED"
+  | "CANCELLED";
+
+export type Role = "REQUESTER" | "IT_STAFF" | "ADMIN";
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  mustChangePassword?: boolean;
+}
 
 export interface RequesterUser {
   id: number;
@@ -32,10 +52,35 @@ export interface Attachment {
   createdAt: string;
 }
 
+export interface PublicComment {
+  id: number;
+  ticketId: number;
+  content: string;
+  createdAt: string;
+  author: {
+    id: number;
+    name: string;
+    role: Role;
+  };
+}
+
+export interface InternalNote {
+  id: number;
+  ticketId: number;
+  content: string;
+  createdAt: string;
+  author: {
+    id: number;
+    name: string;
+    role: Role;
+  };
+}
+
 export interface Ticket {
   id: number;
   ticketNumber: string;
   requesterId: number;
+  ticketOwnerId?: number | null;
   categoryId: number;
   relatedSystemId: number;
   summary: string;
@@ -43,12 +88,17 @@ export interface Ticket {
   requestedPriority: Priority;
   itPriority?: Priority | null;
   currentStatus: TicketStatus;
+  requesterResolved?: boolean;
+  resolutionSummary?: string | null;
   createdAt: string;
   updatedAt: string;
-  requester?: RequesterUser;
+  requester?: User | RequesterUser;
+  ticketOwner?: User | null;
   category?: Category;
   relatedSystem?: RelatedSystem;
   attachments?: Attachment[];
+  comments?: PublicComment[];
+  notes?: InternalNote[];
 }
 
 export interface PaginatedResponse<T> {
