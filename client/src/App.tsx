@@ -10,6 +10,7 @@ import { MyTickets } from "./components/MyTickets.js";
 import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
+import { UserManagement } from "./components/UserManagement.js";
 import { checkSystem, Category, Ticket } from "./api.js";
 
 type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
@@ -158,6 +159,11 @@ function MainApp() {
               setCurrentView("ticket-detail");
             }}
           />
+        )}
+
+        {/* Administrator User Management View */}
+        {currentView === "user-admin" && (
+          <UserManagement />
         )}
 
         {/* System Verification Section (Lab 1 & Lab 2 Connectivity) */}
