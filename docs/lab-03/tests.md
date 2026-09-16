@@ -21,7 +21,7 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | API-07 | API | FR-05, BR-04 | Requester accessing Admin endpoint `/api/admin/users` | 403 Forbidden; access denied | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | API-08 | API | AC-04, FR-13, BR-05 | Requester querying `/api/tickets/:id/notes` | 403 Forbidden; no note data leaked | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
 | API-09 | API | AC-03, FR-06, BR-03 | Requester accessing ticket belonging to another user | 403 Forbidden or 404 Not Found; strict user isolation | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| API-10 | API | AC-05, FR-09 | IT Staff queue retrieval with search, filters, and pagination | 200 OK; filtered tickets returned with correct pagination metadata | `server/tests/lab-03/staff-queue.api.test.ts` | Planned |
+| API-10 | API | AC-05, FR-09 | IT Staff queue retrieval with search, filters, and pagination | 200 OK; filtered tickets returned with correct pagination metadata | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
 | API-11 | API | AC-06, FR-10, BR-12 | IT Staff claim and reassign ticket ownership | 200 OK; `ticketOwnerId` updated to specified staff user | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
 | API-12 | API | AC-06, FR-11, BR-13 | IT Staff updates IT Priority | 200 OK; `itPriority` updated; requestedPriority unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
 | API-13 | API | AC-06, FR-12, BR-14 | Permitted and invalid ticket status transitions | 200 OK for valid transitions; 400 Bad Request for invalid transitions | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
@@ -35,7 +35,7 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | API-21 | API | FR-17 | Admin resets user initial password | 200 OK; `mustChangePassword` reset to true | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | UI-01 | UI | AC-01, FR-01 | Login screen rendering, input validation, and busy state | Inline validation errors on empty submission; spinner while calling API | `client/tests/lab-03/Login.test.tsx` | Pass |
 | UI-02 | UI | AC-02, FR-03, BR-07 | ChangePassword screen validation & password rules | Real-time complexity checklist; prevents submit if rules unmet | `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
-| UI-03 | UI | AC-05, FR-09 | StaffTicketQueue table, search bar, filters, pagination | Table renders correctly; filter updates trigger fetch; pagination works | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
+| UI-03 | UI | AC-05, FR-09 | StaffTicketQueue table, search bar, filters, pagination | Table renders correctly; filter updates trigger fetch; pagination works | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-04 | UI | AC-06, FR-10-13 | StaffTicketDetail controls, notes and comments tabs | Claim button, priority selector, status dropdown, distinct note styling | `client/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-05 | UI | AC-08, AC-09 | UserManagement user table, create/edit modals, safety warnings | User listing, create form, edit form, self-deactivation warning disabled | `client/tests/lab-03/UserManagement.test.tsx` | Planned |
 | E2E-01 | E2E | AC-01, FR-04 | Authentication and logout flow | User logs in, dashboard loads, logs out, session terminated | `e2e/lab-03/authentication.spec.ts` | Planned |

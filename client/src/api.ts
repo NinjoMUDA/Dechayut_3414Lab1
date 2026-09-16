@@ -7,6 +7,8 @@ import {
   Attachment,
   Priority,
   PaginatedResponse,
+  StaffQueueResponse,
+  StaffQueueFilterParams,
 } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -319,5 +321,72 @@ export function getDownloadUrl(attachmentId: number, requesterId?: number): stri
   return `${API_URL}/api/attachments/${attachmentId}/download${query}`;
 }
 
+export async function apiGetStaffTickets(
+  params: StaffQueueFilterParams = {},
+  token?: string | null
+): Promise<StaffQueueResponse> {
+  const query = new URLSearchParams();
+  if (params.search && params.search.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.category && params.category !== "ALL") {
+    query.set("category", params.category);
+  }
+  if (params.status && params.status !== "ALL") {
+    query.set("status", params.status);
+  }
+  if (params.requestedPriority && params.requestedPriority !== "ALL") {
+    query.set("requestedPriority", params.requestedPriority);
+  }
+  if (params.itPriority && params.itPriority !== "ALL") {
+    query.set("itPriority", params.itPriority);
+  }
+  if (params.ownerId && params.ownerId !== "ALL") {
+    query.set("ownerId", params.ownerId);
+  }
+  if (params.sortBy) {
+    query.set("sortBy", params.sortBy);
+  }
+  if (params.sortOrder) {
+    query.set("sortOrder", params.sortOrder);
+  }
+  if (params.page) {
+    query.set("page", String(params.page));
+  }
+  if (params.pageSize) {
+    query.set("pageSize", String(params.pageSize));
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/staff/tickets?${query.toString()}`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch staff tickets");
+  }
+  return json;
+}
+
 export { API_URL };
-export type { Category, RelatedSystem, RequesterUser, User, Ticket, Attachment, Priority, PaginatedResponse };
+export type {
+  Category,
+  RelatedSystem,
+  RequesterUser,
+  User,
+  Ticket,
+  Attachment,
+  Priority,
+  PaginatedResponse,
+  StaffQueueResponse,
+  StaffQueueFilterParams,
+};

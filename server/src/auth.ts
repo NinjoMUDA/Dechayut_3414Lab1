@@ -81,7 +81,8 @@ export function optionalAuthenticate(
   next();
 }
 
-export function requireRole(...allowedRoles: Role[]) {
+export function requireRole(...roles: (Role | Role[])[]) {
+  const allowedRoles = roles.flat();
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({
