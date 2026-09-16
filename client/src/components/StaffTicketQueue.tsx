@@ -428,6 +428,7 @@ export const StaffTicketQueue: React.FC<StaffTicketQueueProps> = ({
                 {tickets.map((t) => (
                   <tr
                     key={t.id}
+                    data-testid={`staff-queue-row-${t.id}`}
                     style={{ cursor: onSelectTicket ? "pointer" : "default" }}
                     onClick={() => onSelectTicket?.(t)}
                   >

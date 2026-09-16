@@ -19,23 +19,30 @@ function MainApp() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { activeRequester, setActiveRequester } = useRequester();
   const [currentView, setCurrentView] = useState<ViewMode>("my-tickets");
-  const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(!activeRequester);
+  const [isSelectorOpen, setIsSelectorOpen] = useState<boolean>(!isAuthenticated && !activeRequester);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
 
-  // Sync authenticated requester with RequesterContext
+  // Sync authenticated requester with RequesterContext and route by role
   useEffect(() => {
-    if (user && user.role === "REQUESTER") {
-      setActiveRequester({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isActive: user.isActive,
-      });
-      setCurrentView("my-tickets");
-    } else if (user && (user.role === "IT_STAFF" || user.role === "ADMIN")) {
-      setCurrentView("staff-queue");
+    if (user) {
+      setIsSelectorOpen(false);
+      if (user.role === "REQUESTER") {
+        if (!activeRequester || activeRequester.id !== user.id) {
+          setActiveRequester({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            isActive: user.isActive,
+          });
+        }
+        setCurrentView("my-tickets");
+      } else if (user.role === "ADMIN") {
+        setCurrentView("user-admin");
+      } else if (user.role === "IT_STAFF") {
+        setCurrentView("staff-queue");
+      }
     }
-  }, [user]);
+  }, [user, activeRequester, setActiveRequester]);
 
   const isAuthed = isAuthenticated || !!activeRequester;
 
@@ -80,7 +87,7 @@ function MainApp() {
           <RequesterSelector
             isOpen={isSelectorOpen}
             onClose={() => setIsSelectorOpen(false)}
-            canCancel={false}
+            canCancel={true}
           />
         )}
       </>
@@ -231,7 +238,7 @@ function MainApp() {
       </main>
 
       {/* Requester Selector Modal (Fallback for Lab 2 backwards compatibility) */}
-      {isSelectorOpen && (
+      {!isAuthenticated && isSelectorOpen && (
         <RequesterSelector
           isOpen={isSelectorOpen}
           onClose={() => setIsSelectorOpen(false)}

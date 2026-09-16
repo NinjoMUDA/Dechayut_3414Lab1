@@ -14,7 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSelector,
 }) => {
   const { user, logout } = useAuth();
-  const { activeRequester } = useRequester();
+  const { activeRequester, clearRequester } = useRequester();
 
   const getRoleBadge = (role?: string) => {
     switch (role) {
@@ -127,7 +127,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
                 <button
                   className="btn btn-outline-light btn-sm rounded-pill px-3"
-                  onClick={logout}
+                  onClick={async () => {
+                    clearRequester();
+                    await logout();
+                  }}
                   aria-label="Log out"
                 >
                   Log out

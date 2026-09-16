@@ -15,8 +15,8 @@
 | [PR #33](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/33) | [Issue #27](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/27) | `docs/lab3-specs` | Docs: Sprint 3 Engineering Contract & Specifications | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. |
 | [PR #34](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/34) | [Issue #28](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/28) | `feature/28-auth-foundation` | Feature: Authentication Foundation & Requester Migration | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. Review comments exchanged. |
 | [PR #35](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/35) | [Issue #29](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/29) | `feature/29-staff-queue` | Feature: IT Staff Ticket Queue | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. Review comments exchanged. |
-| [PR #36](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/36) | [Issue #30](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/30) | `feature/30-ticket-operations` | Feature: IT Staff Ticket Operations & Notes | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. Review comments exchanged. |
-| [PR #37](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/37) | [Issue #31](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/31) | `feature/31-admin-user-management` | Feature: Administrator User Management | Open | Ready for Review | User CRUD, bcrypt hashing, BR-10 self-deactivation block, BR-11 last-admin protection, and temporary password reset. |
+| [PR #37](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/37) | [Issue #31](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/31) | `feature/31-admin-user-management` | Feature: Administrator User Management | Merged | Approved | Approved and merged into `lab3-staging` by @vienggg. Review comments exchanged and resolved. |
+| [PR #38](https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/38) | [Issue #32](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/32) | `feature/32-integration-verification` | Release: Lab 3 E2E Tests, Visual Evidence & Final Integration | Open | Ready for Review | 102/102 tests pass across client and server. E2E suites verify auth, staff triage, and admin lifecycle. |
 
 ---
 
@@ -62,3 +62,10 @@
   - Enforced password complexity regex on `POST /api/admin/users` and `POST /api/admin/users/:id/reset-password`.
   - Updated duplicate email status codes to `409 Conflict` across backend and tests.
   - Updated `tests.md` traceability matrix and test table to map correctly to `AC-11..14` and `FR-20..26`. All 98 tests pass.
+- **Merge Commit:** `72aa4b2` merged into `lab3-staging` by `@vienggg`.
+
+### PR #38 (Release: Lab 3 E2E Tests, Visual Evidence & Final Integration)
+- **Linked Issue:** Resolves [Issue #32](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/32)
+- **Reviewer:** `vienggg`
+- **Status:** Ready for Peer Review & Merge into `lab3-staging`.
+- **Scope:** Full integration test suites in Vitest (`Authentication.e2e.test.tsx`, `StaffTicketFlow.e2e.test.tsx`, `UserAdministration.e2e.test.tsx`), optimistic client logout fix, and zero regression across Lab 1, Lab 2, and Lab 3 suites (102/102 tests passing).

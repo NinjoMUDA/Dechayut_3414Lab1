@@ -17,7 +17,7 @@
 | #29 Feature: IT Staff Ticket Queue | Done |
 | #30 Feature: IT Staff Ticket Operations & Notes | Done |
 | #31 Feature: Administrator User Management | Done |
-| #32 Integration, System Verification & Release | Started |
+| #32 Integration, System Verification & Release | PR Review |
 
 ## Project Structure
 ```
@@ -36,15 +36,15 @@ toktickit/
 
 ## Task Checklist — Issue #32
 - [x] Checkout `lab3-staging`, pull latest, create `feature/32-integration-verification`
-- [ ] Push branch and open early PR to `lab3-staging`
-- [ ] Link PR to Issue #32 via Development panel and move card to Started
-- [ ] Implement E2E integration test suites in `client/tests/lab-03/`:
+- [x] Push branch and open early PR to `lab3-staging` (PR #38)
+- [x] Link PR to Issue #32 via Development panel and move card to Started
+- [x] Implement E2E integration test suites in `client/tests/lab-03/`:
   - `Authentication.e2e.test.tsx` (E2E-01 & E2E-02)
   - `StaffTicketFlow.e2e.test.tsx` (E2E-03)
   - `UserAdministration.e2e.test.tsx` (E2E-04)
-- [ ] Capture visual evidence / screenshots for all roles and responsive viewports
-- [ ] Update final documentation (`docs/lab-03/tests.md`, `reviewer.md`, `ai-use.md`, `session_state.md`)
-- [ ] Verify 100% test pass rate across all suites
+- [x] Capture visual evidence / screenshots for all roles and responsive viewports
+- [x] Update final documentation (`docs/lab-03/tests.md`, `reviewer.md`, `ai-use.md`, `session_state.md`)
+- [x] Verify 100% test pass rate across all suites (102/102 passing)
 - [ ] Move card to PR Review, peer review approval & merge by @vienggg
 
 ## Last Executed Command
