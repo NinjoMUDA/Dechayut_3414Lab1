@@ -44,7 +44,9 @@ toktickit/
 - [x] Implement client Login & mandatory Change Password screens in Zen Green style
 - [x] Write client tests (`client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx`)
 - [x] Verify all tests pass (30 server + 27 client)
-- [ ] Open Pull Request to `lab3-staging` and link Issue #28
+- [x] Open Pull Request to `lab3-staging` (PR #34)
+- [ ] Link PR #34 to Issue #28 via Development panel
+- [ ] Peer review & merge by @vienggg
 
 ## Last Executed Command
-`git checkout -b feature/28-auth-foundation` (Exit code: 0)
+`gh pr create --base lab3-staging --head feature/28-auth-foundation` (Exit code: 0)
