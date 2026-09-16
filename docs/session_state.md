@@ -6,8 +6,8 @@
 - Lab 3: Issue #27 (Sprint 3 Engineering Contract & Specifications) completed and merged via PR #33 by @vienggg.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/30-ticket-operations` (branched from `lab3-staging`)
-- **Active Issue:** Issue #30 — Feature: IT Staff Ticket Operations & Notes
+- **Branch:** `feature/31-admin-user-management` (branched from `lab3-staging`)
+- **Active Issue:** Issue #31 — Feature: Administrator User Management
 
 ## Kanban Status
 | Issue | Status |
@@ -15,8 +15,8 @@
 | #27 Docs: Sprint 3 Engineering Contract & Specifications | Done |
 | #28 Feature: Authentication Foundation & Requester Migration | Done |
 | #29 Feature: IT Staff Ticket Queue | Done |
-| #30 Feature: IT Staff Ticket Operations & Notes | PR Review |
-| #31 Feature: Administrator User Management | Backlog |
+| #30 Feature: IT Staff Ticket Operations & Notes | Done |
+| #31 Feature: Administrator User Management | PR Review |
 | #32 Integration, System Verification & Release | Backlog |
 
 ## Project Structure
@@ -34,22 +34,22 @@ toktickit/
 - Migrations: Lab 3 schema initialized with zero data loss (`20260916100000_init_lab3`)
 - Target Staging: `lab3-staging`
 
-## Task Checklist — Issue #30
-- [x] Checkout `lab3-staging`, pull latest, create `feature/30-ticket-operations`
-- [x] Implement `PATCH /api/staff/tickets/:id` (ownership, priority, BR-14 status transitions)
-- [x] Implement `PATCH /api/tickets/:id/resolve` (requester resolution indicator)
-- [x] Implement `GET` & `POST /api/tickets/:id/comments` (Public Comments)
-- [x] Implement `GET` & `POST /api/tickets/:id/notes` (Role-restricted Internal Notes, BR-05)
-- [x] Implement `GET /api/staff/users` (active IT staff and admin users for assignment)
-- [x] Write server integration tests (`staff-ticket-detail.api.test.ts`, `comments-notes.api.test.ts`)
-- [x] Implement client API methods for ticket operations, comments, and notes
-- [x] Implement `StaffTicketDetail.tsx` with operations, resolution indicator, and comments/notes tabs
-- [x] Integrate Staff Detail view in `App.tsx`
-- [x] Write client tests (`StaffTicketDetail.test.tsx`)
-- [x] Verify 100% test pass (47 server + 39 client)
-- [x] Commit, push, and open PR to `lab3-staging` (PR #36)
-- [ ] Link PR #36 to Issue #30 via Development panel
-- [ ] Peer review & merge by @vienggg
+## Task Checklist — Issue #31
+- [x] Checkout `lab3-staging`, pull latest, create `feature/31-admin-user-management`
+- [x] Push branch and open early PR to `lab3-staging` (PR #37)
+- [x] Link PR to Issue #31 via Development panel and move card to Started
+- [x] Implement Admin User Management API:
+  - `GET /api/admin/users` (search, role filter, active filter, admin-only guard)
+  - `POST /api/admin/users` (create user, bcrypt hash, duplicate check)
+  - `PATCH /api/admin/users/:id` (BR-10 self-deactivation block, BR-11 last active admin protection)
+  - `POST /api/admin/users/:id/reset-password` (reset password + set mustChangePassword: true)
+- [x] Write server integration tests (`users-admin.api.test.ts`)
+- [x] Implement `UserManagement.tsx` component (Zen Green, responsive table/cards, modals, BR-10/11 safety)
+- [x] Integrate User Management in `App.tsx` (view: `user-admin`)
+- [x] Write client tests (`UserManagement.test.tsx`)
+- [x] Verify 100% tests pass (54 server + 44 client = 98 total)
+- [x] Address review feedback: self-demotion block (BR-27), global admin detection, password complexity (BR-09), 409 Conflict (AC-11), traceability mapping (AC-11..14)
+- [ ] Move card back to PR Review, peer review approval & merge by @vienggg
 
 ## Last Executed Command
-`gh pr create --base lab3-staging --head feature/30-ticket-operations` (Exit code: 0)
+`npm test` (Exit code: 0, 98/98 tests passing)

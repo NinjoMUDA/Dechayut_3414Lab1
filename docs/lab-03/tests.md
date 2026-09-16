@@ -18,7 +18,7 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | API-04 | API | FR-02 | Current user profile query `/api/auth/me` with valid token | 200 OK; returns active user details and role | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-05 | API | AC-02, FR-03, BR-02 | Password change via `/api/auth/change-password` | 200 OK; password updated in DB; `mustChangePassword` cleared | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-06 | API | FR-01, FR-05 | Unauthenticated request to protected endpoints | 401 Unauthorized; operation rejected | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| API-07 | API | FR-05, BR-04 | Requester accessing Admin endpoint `/api/admin/users` | 403 Forbidden; access denied | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| API-07 | API | FR-05, BR-04 | Requester accessing Admin endpoint `/api/admin/users` | 403 Forbidden; access denied | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | API-08 | API | AC-04, FR-13, BR-05 | Requester querying `/api/tickets/:id/notes` | 403 Forbidden; no note data leaked | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-09 | API | AC-03, FR-06, BR-03 | Requester accessing ticket belonging to another user | 403 Forbidden or 404 Not Found; strict user isolation | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | API-10 | API | AC-05, FR-09 | IT Staff queue retrieval with search, filters, and pagination | 200 OK; filtered tickets returned with correct pagination metadata | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
@@ -27,21 +27,21 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | API-13 | API | AC-06, FR-12, BR-14 | Permitted and invalid ticket status transitions | 200 OK for valid transitions; 400 Bad Request for invalid transitions | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | API-14 | API | AC-07, FR-07, BR-04 | Create and retrieve Public Comments | 201 Created & 200 OK; visible to Requester, Staff, and Admin | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-15 | API | FR-13, BR-05 | IT Staff posts and retrieves Internal Notes | 201 Created & 200 OK; persisted and visible to Staff/Admin | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
-| API-16 | API | AC-08, FR-14 | Admin queries user list with search and role filter | 200 OK; matching user records returned | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-17 | API | AC-08, FR-15, BR-08 | Admin creates new user with initial password | 201 Created; duplicate email rejected with 400 Bad Request | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-18 | API | AC-08, FR-16 | Admin updates user name, email, role, and active status | 200 OK; database updated | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-19 | API | AC-09, FR-18, BR-10 | Admin attempts self-deactivation | 400 Bad Request; self-deactivation blocked | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-20 | API | AC-09, FR-18, BR-11 | Admin attempts to deactivate or demote last active Admin | 400 Bad Request; last admin removal blocked | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-21 | API | FR-17 | Admin resets user initial password | 200 OK; `mustChangePassword` reset to true | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
+| API-16 | API | AC-11, FR-20 | Admin queries user list with search and role filter | 200 OK; matching user records returned | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-17 | API | AC-11, FR-21, BR-08 | Admin creates new user with initial password | 201 Created; duplicate email rejected with 409 Conflict | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-18 | API | AC-12, FR-22 | Admin updates user name, email, role, and active status | 200 OK; database updated; duplicate email update rejected with 409 Conflict | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-19 | API | AC-13, FR-25, BR-10, BR-27 | Admin attempts self-deactivation or self-demotion | 400 Bad Request; self-deactivation and self-demotion blocked | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-20 | API | AC-13, FR-26, BR-11 | Admin attempts to deactivate or demote last active Admin | 400 Bad Request; last admin removal blocked | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-21 | API | AC-14, FR-23, BR-09 | Admin resets user initial password | 200 OK; `mustChangePassword` reset to true; weak passwords rejected | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | UI-01 | UI | AC-01, FR-01 | Login screen rendering, input validation, and busy state | Inline validation errors on empty submission; spinner while calling API | `client/tests/lab-03/Login.test.tsx` | Pass |
 | UI-02 | UI | AC-02, FR-03, BR-07 | ChangePassword screen validation & password rules | Real-time complexity checklist; prevents submit if rules unmet | `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-03 | UI | AC-05, FR-09 | StaffTicketQueue table, search bar, filters, pagination | Table renders correctly; filter updates trigger fetch; pagination works | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-04 | UI | AC-06, FR-10-13 | StaffTicketDetail controls, notes and comments tabs | Claim button, priority selector, status dropdown, distinct note styling | `client/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
-| UI-05 | UI | AC-08, AC-09 | UserManagement user table, create/edit modals, safety warnings | User listing, create form, edit form, self-deactivation warning disabled | `client/tests/lab-03/UserManagement.test.tsx` | Planned |
+| UI-05 | UI | AC-11..14, FR-20..26 | UserManagement user table, create/edit modals, safety warnings | User listing, create form, edit form, self-deactivation/demotion guards disabled | `client/tests/lab-03/UserManagement.test.tsx` | Pass |
 | E2E-01 | E2E | AC-01, FR-04 | Authentication and logout flow | User logs in, dashboard loads, logs out, session terminated | `e2e/lab-03/authentication.spec.ts` | Planned |
 | E2E-02 | E2E | AC-02, FR-03 | First login with temporary password $\rightarrow$ change password gate | User redirected to Change Password screen; normal app opens only after valid change | `e2e/lab-03/authentication.spec.ts` | Planned |
 | E2E-03 | E2E | AC-05, AC-06 | IT Staff triage workflow: queue $\rightarrow$ claim $\rightarrow$ set priority $\rightarrow$ transition status $\rightarrow$ note | Staff user triage flow completes successfully | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
-| E2E-04 | E2E | AC-08, AC-09 | Administrator user management: create $\rightarrow$ edit $\rightarrow$ reset password $\rightarrow$ safety guards | Admin lifecycle operations succeed with safety guards enforced | `e2e/lab-03/user-administration.spec.ts` | Planned |
+| E2E-04 | E2E | AC-11..14, FR-20..26 | Administrator user management: create $\rightarrow$ edit $\rightarrow$ reset password $\rightarrow$ safety guards | Admin lifecycle operations succeed with safety guards enforced | `e2e/lab-03/user-administration.spec.ts` | Planned |
 
 ---
 
@@ -56,9 +56,11 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | **AC-05** | IT Staff queue search, filter, sort, and pagination | `API-10`, `UI-03`, `E2E-03` |
 | **AC-06** | IT Staff ticket ownership claim, priority & status updates | `API-11`, `API-12`, `API-13`, `UI-04`, `E2E-03` |
 | **AC-07** | Public Comments visible to Requester, IT Staff, Admin | `API-14`, `UI-04` |
-| **AC-08** | Administrator User Management CRUD operations | `API-16`, `API-17`, `API-18`, `API-21`, `UI-05`, `E2E-04` |
-| **AC-09** | Administrator safety rules (self & last admin deactivation) | `API-19`, `API-20`, `UI-05`, `E2E-04` |
 | **AC-10** | Inactive user account authentication rejection | `API-03` |
+| **AC-11** | Admin queries user list with search/filter & creates user | `API-16`, `API-17`, `UI-05`, `E2E-04` |
+| **AC-12** | Admin updates user profile, role, and active status | `API-18`, `UI-05`, `E2E-04` |
+| **AC-13** | Administrator safety rules (self deactivation/demotion & last admin) | `API-19`, `API-20`, `UI-05`, `E2E-04` |
+| **AC-14** | Admin resets user initial password with complexity rules | `API-21`, `UI-05`, `E2E-04` |
 
 ---
 

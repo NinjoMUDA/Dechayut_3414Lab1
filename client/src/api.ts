@@ -3,6 +3,7 @@ import {
   RelatedSystem,
   RequesterUser,
   User,
+  Role,
   Ticket,
   Attachment,
   Priority,
@@ -549,12 +550,137 @@ export async function apiAddNote(
   return json.data;
 }
 
+// ---------------------------------------------------------------------------
+// Administrator User Management APIs (Lab 3)
+// ---------------------------------------------------------------------------
+
+export async function apiGetAdminUsers(
+  params?: { search?: string; role?: string; isActive?: boolean },
+  token?: string | null
+): Promise<User[]> {
+  const query = new URLSearchParams();
+  if (params?.search && params.search.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params?.role && params.role !== "ALL") {
+    query.set("role", params.role);
+  }
+  if (params?.isActive !== undefined) {
+    query.set("isActive", String(params.isActive));
+  }
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users?${query.toString()}`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch users");
+  }
+  return json.data;
+}
+
+export async function apiCreateAdminUser(
+  payload: {
+    name: string;
+    email: string;
+    role: Role;
+    isActive?: boolean;
+    initialPassword?: string;
+  },
+  token?: string | null
+): Promise<User> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to create user");
+  }
+  return json.data;
+}
+
+export async function apiUpdateAdminUser(
+  id: number,
+  payload: {
+    name?: string;
+    email?: string;
+    role?: Role;
+    isActive?: boolean;
+  },
+  token?: string | null
+): Promise<User> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update user");
+  }
+  return json.data;
+}
+
+export async function apiResetUserPassword(
+  id: number,
+  initialPassword?: string,
+  token?: string | null
+): Promise<{ mustChangePassword: boolean }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users/${id}/reset-password`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ initialPassword }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to reset password");
+  }
+  return json.data;
+}
+
 export { API_URL };
 export type {
   Category,
   RelatedSystem,
   RequesterUser,
   User,
+  Role,
   Ticket,
   Attachment,
   Priority,
