@@ -2,10 +2,17 @@ import {
   Category,
   RelatedSystem,
   RequesterUser,
+  User,
+  Role,
   Ticket,
   Attachment,
   Priority,
   PaginatedResponse,
+  StaffQueueResponse,
+  StaffQueueFilterParams,
+  PublicComment,
+  InternalNote,
+  TicketStatus,
 } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -16,7 +23,7 @@ export interface SystemStatus {
 }
 
 export interface CreateTicketPayload {
-  requesterId: number;
+  requesterId?: number;
   categoryId: number;
   relatedSystemId: number;
   summary: string;
@@ -25,7 +32,7 @@ export interface CreateTicketPayload {
 }
 
 export interface GetTicketsParams {
-  requesterId: number;
+  requesterId?: number;
   search?: string;
   categoryId?: number | "";
   requestedPriority?: string;
@@ -37,6 +44,77 @@ export interface GetTicketsParams {
   limit?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Authentication APIs (Lab 3)
+// ---------------------------------------------------------------------------
+export async function apiLogin(email: string, password: string): Promise<{ token: string; user: User }> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Failed to sign in");
+  }
+  return json.data;
+}
+
+export async function apiGetMe(token?: string | null): Promise<User> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/auth/me`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Unable to retrieve session");
+  }
+  return json.data;
+}
+
+export async function apiChangePassword(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+  token?: string | null
+): Promise<{ mustChangePassword: boolean }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/auth/change-password`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Failed to update password");
+  }
+  return json.data;
+}
+
+export async function apiLogout(): Promise<void> {
+  await fetch(`${API_URL}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Health & Reference Data
+// ---------------------------------------------------------------------------
 export async function checkSystem(): Promise<SystemStatus> {
   const healthRes = await fetch(`${API_URL}/api/health`);
   if (!healthRes.ok) {
@@ -76,13 +154,21 @@ export async function getRelatedSystems(): Promise<RelatedSystem[]> {
   return res.json();
 }
 
-export async function createTicket(payload: CreateTicketPayload): Promise<Ticket> {
+export async function createTicket(payload: CreateTicketPayload, token?: string | null): Promise<Ticket> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (payload.requesterId) {
+    headers["x-requester-id"] = String(payload.requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/tickets`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-requester-id": String(payload.requesterId),
-    },
+    headers,
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
@@ -96,10 +182,11 @@ export async function createTicket(payload: CreateTicketPayload): Promise<Ticket
   return json.data;
 }
 
-export async function getTickets(params: GetTicketsParams): Promise<PaginatedResponse<Ticket>> {
+export async function getTickets(params: GetTicketsParams, token?: string | null): Promise<PaginatedResponse<Ticket>> {
   const query = new URLSearchParams();
-  query.set("requesterId", String(params.requesterId));
-
+  if (params.requesterId) {
+    query.set("requesterId", String(params.requesterId));
+  }
   if (params.search && params.search.trim()) {
     query.set("search", params.search.trim());
   }
@@ -128,10 +215,17 @@ export async function getTickets(params: GetTicketsParams): Promise<PaginatedRes
     query.set("limit", String(params.limit));
   }
 
+  const headers: Record<string, string> = {};
+  if (params.requesterId) {
+    headers["x-requester-id"] = String(params.requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/tickets?${query.toString()}`, {
-    headers: {
-      "x-requester-id": String(params.requesterId),
-    },
+    headers,
+    credentials: "include",
   });
 
   const json = await res.json();
@@ -141,11 +235,18 @@ export async function getTickets(params: GetTicketsParams): Promise<PaginatedRes
   return json;
 }
 
-export async function getTicketDetail(ticketId: number, requesterId: number): Promise<Ticket> {
+export async function getTicketDetail(ticketId: number, requesterId?: number, token?: string | null): Promise<Ticket> {
+  const headers: Record<string, string> = {};
+  if (requesterId) {
+    headers["x-requester-id"] = String(requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/tickets/${ticketId}`, {
-    headers: {
-      "x-requester-id": String(requesterId),
-    },
+    headers,
+    credentials: "include",
   });
 
   const json = await res.json();
@@ -158,17 +259,27 @@ export async function getTicketDetail(ticketId: number, requesterId: number): Pr
 export async function uploadAttachment(
   ticketId: number,
   file: File,
-  requesterId: number
+  requesterId?: number,
+  token?: string | null
 ): Promise<Attachment> {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("requesterId", String(requesterId));
+  if (requesterId) {
+    formData.append("requesterId", String(requesterId));
+  }
+
+  const headers: Record<string, string> = {};
+  if (requesterId) {
+    headers["x-requester-id"] = String(requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const res = await fetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
     method: "POST",
-    headers: {
-      "x-requester-id": String(requesterId),
-    },
+    headers,
+    credentials: "include",
     body: formData,
   });
 
@@ -182,14 +293,23 @@ export async function uploadAttachment(
 export async function softRemoveAttachment(
   attachmentId: number,
   removalReason: string,
-  requesterId: number
+  requesterId?: number,
+  token?: string | null
 ): Promise<Attachment> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (requesterId) {
+    headers["x-requester-id"] = String(requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_URL}/api/attachments/${attachmentId}/soft-remove`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "x-requester-id": String(requesterId),
-    },
+    headers,
+    credentials: "include",
     body: JSON.stringify({ removalReason, requesterId }),
   });
 
@@ -200,9 +320,374 @@ export async function softRemoveAttachment(
   return json.data;
 }
 
-export function getDownloadUrl(attachmentId: number, requesterId: number): string {
-  return `${API_URL}/api/attachments/${attachmentId}/download?requesterId=${requesterId}`;
+export function getDownloadUrl(attachmentId: number, requesterId?: number): string {
+  const query = requesterId ? `?requesterId=${requesterId}` : "";
+  return `${API_URL}/api/attachments/${attachmentId}/download${query}`;
+}
+
+export async function apiGetStaffTickets(
+  params: StaffQueueFilterParams = {},
+  token?: string | null
+): Promise<StaffQueueResponse> {
+  const query = new URLSearchParams();
+  if (params.search && params.search.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params.category && params.category !== "ALL") {
+    query.set("category", params.category);
+  }
+  if (params.status && params.status !== "ALL") {
+    query.set("status", params.status);
+  }
+  if (params.requestedPriority && params.requestedPriority !== "ALL") {
+    query.set("requestedPriority", params.requestedPriority);
+  }
+  if (params.itPriority && params.itPriority !== "ALL") {
+    query.set("itPriority", params.itPriority);
+  }
+  if (params.ownerId && params.ownerId !== "ALL") {
+    query.set("ownerId", params.ownerId);
+  }
+  if (params.sortBy) {
+    query.set("sortBy", params.sortBy);
+  }
+  if (params.sortOrder) {
+    query.set("sortOrder", params.sortOrder);
+  }
+  if (params.page) {
+    query.set("page", String(params.page));
+  }
+  if (params.pageSize) {
+    query.set("pageSize", String(params.pageSize));
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/staff/tickets?${query.toString()}`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch staff tickets");
+  }
+  return json;
+}
+
+export async function apiGetStaffUsers(token?: string | null): Promise<User[]> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/staff/users`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch staff users");
+  }
+  return json.data;
+}
+
+export async function apiUpdateStaffTicket(
+  ticketId: number,
+  payload: {
+    ticketOwnerId?: number | null;
+    itPriority?: Priority;
+    currentStatus?: TicketStatus;
+    resolutionSummary?: string;
+  },
+  token?: string | null
+): Promise<Ticket> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/staff/tickets/${ticketId}`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update ticket");
+  }
+  return json.data;
+}
+
+export async function apiResolveTicket(
+  ticketId: number,
+  requesterResolved: boolean,
+  token?: string | null
+): Promise<{ id: number; ticketNumber: string; requesterResolved: boolean }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/resolve`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ requesterResolved }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update resolution indicator");
+  }
+  return json.data;
+}
+
+export async function apiGetComments(ticketId: number, token?: string | null): Promise<PublicComment[]> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/comments`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch comments");
+  }
+  return json.data;
+}
+
+export async function apiAddComment(
+  ticketId: number,
+  content: string,
+  token?: string | null
+): Promise<PublicComment> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/comments`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ content }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to add comment");
+  }
+  return json.data;
+}
+
+export async function apiGetNotes(ticketId: number, token?: string | null): Promise<InternalNote[]> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/notes`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch internal notes");
+  }
+  return json.data;
+}
+
+export async function apiAddNote(
+  ticketId: number,
+  content: string,
+  token?: string | null
+): Promise<InternalNote> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/notes`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ content }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to add internal note");
+  }
+  return json.data;
+}
+
+// ---------------------------------------------------------------------------
+// Administrator User Management APIs (Lab 3)
+// ---------------------------------------------------------------------------
+
+export async function apiGetAdminUsers(
+  params?: { search?: string; role?: string; isActive?: boolean },
+  token?: string | null
+): Promise<User[]> {
+  const query = new URLSearchParams();
+  if (params?.search && params.search.trim()) {
+    query.set("search", params.search.trim());
+  }
+  if (params?.role && params.role !== "ALL") {
+    query.set("role", params.role);
+  }
+  if (params?.isActive !== undefined) {
+    query.set("isActive", String(params.isActive));
+  }
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users?${query.toString()}`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to fetch users");
+  }
+  return json.data;
+}
+
+export async function apiCreateAdminUser(
+  payload: {
+    name: string;
+    email: string;
+    role: Role;
+    isActive?: boolean;
+    initialPassword?: string;
+  },
+  token?: string | null
+): Promise<User> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to create user");
+  }
+  return json.data;
+}
+
+export async function apiUpdateAdminUser(
+  id: number,
+  payload: {
+    name?: string;
+    email?: string;
+    role?: Role;
+    isActive?: boolean;
+  },
+  token?: string | null
+): Promise<User> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update user");
+  }
+  return json.data;
+}
+
+export async function apiResetUserPassword(
+  id: number,
+  initialPassword?: string,
+  token?: string | null
+): Promise<{ mustChangePassword: boolean }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/admin/users/${id}/reset-password`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ initialPassword }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to reset password");
+  }
+  return json.data;
 }
 
 export { API_URL };
-export type { Category, RelatedSystem, RequesterUser, Ticket, Attachment, Priority, PaginatedResponse };
+export type {
+  Category,
+  RelatedSystem,
+  RequesterUser,
+  User,
+  Role,
+  Ticket,
+  Attachment,
+  Priority,
+  PaginatedResponse,
+  StaffQueueResponse,
+  StaffQueueFilterParams,
+  PublicComment,
+  InternalNote,
+  TicketStatus,
+};
