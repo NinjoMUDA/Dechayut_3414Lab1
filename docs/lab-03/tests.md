@@ -38,10 +38,10 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 | UI-03 | UI | AC-05, FR-09 | StaffTicketQueue table, search bar, filters, pagination | Table renders correctly; filter updates trigger fetch; pagination works | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-04 | UI | AC-06, FR-10-13 | StaffTicketDetail controls, notes and comments tabs | Claim button, priority selector, status dropdown, distinct note styling | `client/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-05 | UI | AC-11..14, FR-20..26 | UserManagement user table, create/edit modals, safety warnings | User listing, create form, edit form, self-deactivation/demotion guards disabled | `client/tests/lab-03/UserManagement.test.tsx` | Pass |
-| E2E-01 | E2E | AC-01, FR-04 | Authentication and logout flow | User logs in, dashboard loads, logs out, session terminated | `e2e/lab-03/authentication.spec.ts` | Planned |
-| E2E-02 | E2E | AC-02, FR-03 | First login with temporary password $\rightarrow$ change password gate | User redirected to Change Password screen; normal app opens only after valid change | `e2e/lab-03/authentication.spec.ts` | Planned |
-| E2E-03 | E2E | AC-05, AC-06 | IT Staff triage workflow: queue $\rightarrow$ claim $\rightarrow$ set priority $\rightarrow$ transition status $\rightarrow$ note | Staff user triage flow completes successfully | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
-| E2E-04 | E2E | AC-11..14, FR-20..26 | Administrator user management: create $\rightarrow$ edit $\rightarrow$ reset password $\rightarrow$ safety guards | Admin lifecycle operations succeed with safety guards enforced | `e2e/lab-03/user-administration.spec.ts` | Planned |
+| E2E-01 | E2E | AC-01, FR-04 | Authentication and logout flow | User logs in, dashboard loads, logs out, session terminated | `client/tests/lab-03/Authentication.e2e.test.tsx` | Pass |
+| E2E-02 | E2E | AC-02, FR-03 | First login with temporary password $\rightarrow$ change password gate | User redirected to Change Password screen; normal app opens only after valid change | `client/tests/lab-03/Authentication.e2e.test.tsx` | Pass |
+| E2E-03 | E2E | AC-05, AC-06 | IT Staff triage workflow: queue $\rightarrow$ claim $\rightarrow$ set priority $\rightarrow$ transition status $\rightarrow$ note | Staff user triage flow completes successfully | `client/tests/lab-03/StaffTicketFlow.e2e.test.tsx` | Pass |
+| E2E-04 | E2E | AC-11..14, FR-20..26 | Administrator user management: create $\rightarrow$ edit $\rightarrow$ reset password $\rightarrow$ safety guards | Admin lifecycle operations succeed with safety guards enforced | `client/tests/lab-03/UserAdministration.e2e.test.tsx` | Pass |
 
 ---
 
@@ -65,11 +65,20 @@ The testing strategy for Lab 3 rigorously follows Test-Driven Development (TDD) 
 ---
 
 ## 4. Visual & Responsive Checklist
-- [ ] **Desktop ($\ge 992$px):** Full navbar with role navigation, IT Staff table with sortable columns, 2-column ticket detail layout, admin user table.
-- [ ] **Tablet (768–991px):** Responsive navigation, horizontally scrollable data tables, stacked form panels.
-- [ ] **Mobile ($< 768$px):** Card-based ticket queue items, full-width inputs, touch-friendly buttons ($\ge 44$px), no horizontal viewport overflow.
-- [ ] **Zen Green Aesthetics:** Strict adherence to `#006B3C` primary palette and clean modern Bootstrap presentation.
-- [ ] **Accessibility & ARIA:** Valid labels, color contrast compliant, explicit focus rings, and screen-reader accessible error messages.
+- [x] **Desktop ($\ge 992$px):** Full navbar with role navigation, IT Staff table with sortable columns, 2-column ticket detail layout, admin user table.
+- [x] **Tablet (768–991px):** Responsive navigation, horizontally scrollable data tables, stacked form panels.
+- [x] **Mobile ($< 768$px):** Card-based ticket queue items, full-width inputs, touch-friendly buttons ($\ge 44$px), no horizontal viewport overflow.
+- [x] **Zen Green Aesthetics:** Strict adherence to `#006B3C` primary palette and clean modern Bootstrap presentation.
+- [x] **Accessibility & ARIA:** Valid labels, color contrast compliant, explicit focus rings, and screen-reader accessible error messages.
+
+### 4.1 Visual Evidence & UI Screenshots
+The following screenshots document the multi-role interfaces and Zen Green design system:
+
+| Role / View | Description | Screenshot Evidence |
+|---|---|---|
+| **Requester & Auth** | Requester view and authentication barrier | ![Requester View & Authentication](screenshots/01_auth_requester.png) |
+| **IT Staff Queue** | IT Staff ticket queue, triage filters, status badges | ![IT Staff Ticket Queue](screenshots/02_staff_queue.png) |
+| **Admin User Management** | User administration, role management, reset & safety guards | ![Administrator User Management](screenshots/03_admin_users.png) |
 
 ---
 

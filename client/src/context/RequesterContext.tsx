@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { RequesterUser } from "../types/index.js";
 
 interface RequesterContextType {
@@ -21,18 +21,18 @@ export const RequesterProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  const setActiveRequester = (requester: RequesterUser | null) => {
+  const setActiveRequester = useCallback((requester: RequesterUser | null) => {
     setActiveRequesterState(requester);
     if (requester) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(requester));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
-  };
+  }, []);
 
-  const clearRequester = () => {
+  const clearRequester = useCallback(() => {
     setActiveRequester(null);
-  };
+  }, [setActiveRequester]);
 
   return (
     <RequesterContext.Provider value={{ activeRequester, setActiveRequester, clearRequester }}>

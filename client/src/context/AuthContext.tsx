@@ -69,6 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("toktickit_token");
     try {
       if (typeof (api as any).apiLogout === "function") {
         await (api as any).apiLogout();
@@ -76,9 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Ignore network errors on logout
     }
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("toktickit_token");
   };
 
   const changePassword = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
