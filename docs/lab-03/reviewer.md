@@ -80,11 +80,17 @@
 ### PR #39 (Release: Lab 3 E2E Tests, Visual Evidence & Final Integration)
 - **Linked Issue:** Resolves [Issue #32](https://github.com/NinjoMUDA/Dechayut_3414Lab1/issues/32)
 - **Reviewer:** `vienggg`
-- **Status:** Ready for Peer Review & Merge into `lab3-staging`.
+- **Status:** Changes Requested Addressed & Ready for Re-Review & Merge into `lab3-staging`.
+- **Reviewer Feedback on PR #39:**
+  - Replace Screenshots with Real UI Captures: The previous PNG files contained placeholder notes/assets rather than TokTickIT app screens.
 - **Author Reply & Resolution:**
+  - Generated and replaced all 3 screenshots with real, high-resolution browser captures of the running TokTickIT application:
+    1. `01_auth_requester.png`: Requester view (`jennifer.anderson@example.com`) showing ticket table, category filters, and create ticket navigation.
+    2. `02_staff_queue.png`: IT Staff queue (`michael.brown@toktickit.com`) showing multi-criteria filters, assignment tabs, and ticket cards/table.
+    3. `03_admin_users.png`: Administrator user management (`john.smith@toktickit.com`) showing role/status badges and action buttons.
   - Fixed TypeScript typing and imports across client components and tests; `npm run build` succeeds cleanly (`tsc && vite build`).
   - Added `fileParallelism: false` in `client/vite.config.ts`.
   - Expanded `Authentication.e2e.test.tsx`, `StaffTicketFlow.e2e.test.tsx`, and `UserAdministration.e2e.test.tsx` with all requested flows and safety assertions.
-  - Purged dummy uploads with `git rm`, added `.gitkeep` with `.gitignore` rule, and placed real screenshots in `docs/lab-03/screenshots/` and linked them in `tests.md`.
+  - Purged dummy uploads with `git rm`, added `.gitkeep` with `.gitignore` rule, and linked screenshots in `tests.md`.
   - Adjusted dev selector modal default condition in `App.tsx` so unauthenticated users are never blocked by the overlay.
   - All 107 automated tests pass (54 server + 53 client).

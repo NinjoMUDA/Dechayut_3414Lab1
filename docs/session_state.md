@@ -47,7 +47,9 @@ toktickit/
 - [x] Verify 100% test pass rate across all suites (107/107 passing)
 - [x] Address peer reviewer (@vienggg) changes requested on PR #38
 - [x] Reset `lab3-staging` to cleanly supersede accidental PR #38 merge
-- [ ] Open PR #39 for peer review approval & merge into `lab3-staging` by @vienggg
+- [x] Open PR #39 for peer review approval & merge into `lab3-staging` by @vienggg
+- [x] Replace placeholder screenshots with authentic TokTickIT UI captures
+- [ ] Peer review approval & merge into `lab3-staging` by @vienggg
 
 ## Last Executed Command
-`git push origin 4455fd0:lab3-staging --force` (Exit code: 0)
+`git commit -m "fix(docs): replace screenshots with authentic TokTickIT UI captures (Issue #32)"` (Exit code: 0)
