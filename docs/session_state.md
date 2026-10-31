@@ -19,11 +19,17 @@
 | #43 Feature: Actions Taken UI & Ticket Detail Integration | Done |
 | #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | Done |
 | #45 Feature: Role-Based Dashboards | Done |
-| #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | In Progress (PR #52) |
+| #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | In Progress (PR #52 Changes Addressed) |
 
 ## Project Structure
 ```
 toktickit/
+├── artifacts/
+│   └── lab-04/
+│       └── screenshots/
+│           ├── actions-taken/
+│           ├── requester-dashboard/
+│           └── staff-dashboard/
 ├── client/          # React + Vite + Bootstrap (Zen Green)
 ├── server/          # Express + TypeScript + Prisma
 └── docs/
@@ -47,11 +53,11 @@ toktickit/
   - `ticket-resolution.spec.tsx` (E2E-02) - Pass
   - `dashboards.spec.tsx` (E2E-03) - Pass
 - [x] Run full test suites across server, client, and e2e (142/142 tests passing)
+- [x] Capture visual evidence across Desktop (1280px), Tablet (768px), and Mobile (375px) breakpoints
 - [x] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
-- [ ] Capture visual evidence across Desktop (1280px), Tablet (768px), and Mobile (375px) breakpoints
 - [ ] Compile and generate final comprehensive Lab 4 PDF and DOCX reports matching 9 report parts
 - [ ] Peer review and merge PR #52 into `lab4-staging` by @vienggg
 - [ ] Open final release PR from `lab4-staging` to `main`, peer review and merge
 
 ## Last Executed Command
-`npm test` in client and server (Exit code: 0, 142/142 passing)
+`node scripts/capture_screenshots.mjs` and `node scripts/capture_resolution_modal.mjs` (Screenshots generated in artifacts/lab-04/screenshots)

@@ -35,3 +35,15 @@
 * **Server Test Suite (`server`):** 74 passing tests across 17 test files (100% pass)
 * **Client & E2E Test Suite (`client`):** 68 passing tests across 22 test files (100% pass)
 * **Total Automated Tests:** 142 passing tests with 0 failures
+
+---
+
+## 3. Visual Evidence & Responsive Breakpoint Coverage
+
+| Evidence Artifact | Target Feature / Flow | Viewports Covered | File Location |
+|---|---|---|---|
+| IT Staff Dashboard | Operational metrics, priority breakdowns, quick actions | Desktop (1280px), Tablet (768px), Mobile (375px) | `artifacts/lab-04/screenshots/staff-dashboard/` |
+| Requester Dashboard | Requester-scoped metrics, recent tickets, drill-downs | Desktop (1280px), Tablet (768px), Mobile (375px) | `artifacts/lab-04/screenshots/requester-dashboard/` |
+| Actions Taken Panel | Chronological action timeline, performer tags, follow-up flags | Desktop (1280px), Mobile (375px) | `artifacts/lab-04/screenshots/actions-taken/` |
+| Record Action Modal | Action modal with auto-populated performer and validation | Modal viewport | `artifacts/lab-04/screenshots/actions-taken/record-action-modal.png` |
+| Ticket Resolution Gate | Resolution summary requirement and state transition validation | Detail viewport | `artifacts/lab-04/screenshots/actions-taken/resolution-modal.png` |

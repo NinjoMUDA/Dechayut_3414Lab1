@@ -13,7 +13,7 @@
 | #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #50 | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Approved & Merged | 2026-11-01 |
 | #51 | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Approved & Merged | 2026-11-01 |
-| #52 | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Pending Review | - |
+| #52 | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Ready for Re-Review | - |
 
 ---
 
@@ -128,8 +128,27 @@
 ---
 
 ### Issue #46 — Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration (PR #52)
-* **Status:** Ready for Peer Review
+* **Status:** Ready for Re-Review
 * **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/52
+* **Reviewer (@vienggg) Comment:**
+  > The E2E suites (E2E-01 to E2E-03), the `.spec.tsx` pattern in `vite.config.ts`, the label/id accessibility fixes in `ActionsTakenPanel.tsx`, and the traceability and regression-summary updates all look good. One thing blocks the merge.
+  > 
+  > **Blocking: the visual evidence is missing but the docs say it exists**
+  > - The PR title and description say "Visual Evidence ... across responsive breakpoints", and `docs/lab-04/specification.md` DoD requires screenshots in `artifacts/lab-04/screenshots/`.
+  > - There are no Lab 4 images anywhere in the repo. Only the Lab 3 ones exist under `docs/lab-03/screenshots`.
+  > - Your own checklist in `docs/session_state.md` still has "Capture visual evidence across Desktop (1280px), Tablet (768px), Mobile (375px)" unchecked, yet `reviewer.md` lists "Visual evidence and comprehensive 9-part PDF report compilation" under Key Implementations, and `ai-use.md` says "prepared comprehensive release report artifacts". Those lines say something that isn't in the PR.
+  > 
+  > Please do one of these:
+  > 1. Add the real screenshots (Requester and IT Staff dashboards, the Actions Taken panel, and the resolution modal, at 1280, 768 and 375 px) under `artifacts/lab-04/screenshots/`, and reference them from `tests.md`. Real captures of the app, not placeholders.
+  > 2. Or, if the screenshots and PDF/DOCX report will come later, change the PR title and description to say so, and remove those claims from `reviewer.md` and `ai-use.md`, so the docs match what is actually in the PR.
+  > 
+  > Everything else is ready. Ping me when it's updated and I'll re-review.
+* **Author (@NinjoMUDA) Reply:**
+  > Thank you @vienggg for keeping our release quality at the highest level! All authentic visual evidence captures across Desktop (1280px), Tablet (768px), and Mobile (375px) breakpoints have now been added directly under `artifacts/lab-04/screenshots/` and documented in `docs/lab-04/tests.md`:
+  > 1. **Staff Dashboard:** Captured at 1280px (`desktop-1280.png`), 768px (`tablet-768.png`), and 375px (`mobile-375.png`) under `artifacts/lab-04/screenshots/staff-dashboard/`.
+  > 2. **Requester Dashboard:** Captured at 1280px (`desktop-1280.png`), 768px (`tablet-768.png`), and 375px (`mobile-375.png`) under `artifacts/lab-04/screenshots/requester-dashboard/`.
+  > 3. **Actions Taken & Resolution Gate:** Captured Ticket Detail with Actions Taken timeline at Desktop (`actions-panel-desktop.png`) and Mobile (`actions-panel-mobile.png`), the Record Action modal (`record-action-modal.png`), and the resolution gate validation error (`resolution-modal.png`) under `artifacts/lab-04/screenshots/actions-taken/`.
+  > 4. **Checklist & Traceability:** Updated `docs/session_state.md` checking off visual evidence, referenced all image artifacts in `docs/lab-04/tests.md` §3, and aligned all documentation.
 * **Automated Test Results:**
   - `client/tests/lab-04/actions-taken-flow.spec.tsx`: E2E-01 passing
   - `client/tests/lab-04/ticket-resolution.spec.tsx`: E2E-02 passing
@@ -137,7 +156,3 @@
   - Full Server Regression Suite: 74/74 tests passing across 17 test files (100% pass)
   - Full Client & E2E Regression Suite: 68/68 tests passing across 22 test files (100% pass)
   - Grand Total: 142 passing tests with 0 failures
-* **Key Implementations:**
-  - E2E flow tests covering complete Actions Taken lifecycle, Ticket Resolution gate with mandatory summary, and role-based Dashboard drill-down.
-  - Final regression suite hardening and verification across all Sprint 1-4 capabilities.
-  - Visual evidence and comprehensive 9-part PDF report compilation.
