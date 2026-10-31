@@ -25,8 +25,12 @@
 * **User Input:** `ต่อเลย`
 * **AI Action:** Applied Prisma migration `add_actions_taken` for `ActionTaken` model with cascades and indexes. Updated `seed.ts` with idempotent realistic Actions Taken data. Implemented `GET /api/tickets/:id/actions`, `POST /api/tickets/:id/actions`, and `PATCH /api/tickets/:id/actions/:actionId` in `server/src/app.ts`. Created and ran Supertest suite `server/tests/lab-04/actions-taken.api.test.ts` (7/7 tests passing). Verified zero regression across all 61 server tests.
 
+### Prompt 5: Issue #43 Actions Taken UI & Ticket Detail Integration
+* **User Input:** `link แล้วต่อเลย`
+* **AI Action:** Defined `ActionTaken` client types and API services (`apiGetActionsTaken`, `apiCreateActionTaken`, `apiUpdateActionTaken`). Built `ActionsTakenPanel.tsx` in Zen Green theme featuring action chronological timelines, auto-populated performer, follow-up flags, conditional validation, and edit modals. Embedded panel into `StaffTicketDetail.tsx` (full record/edit) and `RequesterTicketDetail.tsx` (read-only mode). Implemented Vitest component suite `client/tests/lab-04/ActionsTaken.test.tsx` (3/3 tests passing). Verified all 56 client tests pass.
+
 ---
 
 ## 3. My Reflection on Specification & Coding Agents
 Using an AI Specification Agent at the inception of Sprint 4 ensures that requirements are crystallized into verifiable Acceptance Criteria (ACs) and numbered Business Rules (BRs) before any database migration or UI code is written. This Spec-DD approach prevents architectural drift, guarantees backward compatibility with earlier lab sprints, and provides a clear traceability chain from user requirements directly into automated test assertions.
-During Issue #42, the pair programming workflow ensured that conditional validation rules (such as mandatory `followUpNote` when `followUpRequired` is true) and role authorization guards (preventing requesters from writing or viewing other users' actions) were strictly implemented and verified by automated Supertest suites before moving to UI integration.
+During Issue #42 and Issue #43, the pair programming workflow ensured that conditional validation rules (such as mandatory `followUpNote` when `followUpRequired` is true) and role authorization guards (preventing requesters from writing or viewing other users' actions) were strictly implemented and verified by automated Supertest and React Testing Library component suites before opening PRs.

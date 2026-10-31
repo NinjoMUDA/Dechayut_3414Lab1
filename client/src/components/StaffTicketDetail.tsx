@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext.js";
+import { ActionsTakenPanel } from "./ActionsTakenPanel.js";
 import {
   Ticket,
   User,
@@ -404,9 +405,16 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
               )}
             </div>
           </div>
-        </div>
+                    {/* Actions Taken Panel */}
+            <ActionsTakenPanel
+              ticketId={ticket.id}
+              token={token}
+              currentUser={user}
+              readOnly={false}
+            />
+          </div>
 
-        {/* Right Column: Staff Operations & Communications */}
+          {/* Right Column: Staff Operations & Communications */}
         <div className="col-12 col-lg-5">
           {/* Operations Card */}
           <div className="zen-card p-4 mb-4 shadow-sm">
