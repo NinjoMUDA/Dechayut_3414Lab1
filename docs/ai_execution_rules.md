@@ -43,7 +43,7 @@ By default, operate in a strict step-by-step loop (Standard Ask-First Mode):
 
 ## 4. Silent Documentation Updates & Markdown Transparency
 To preserve context without wasting output tokens, silently update the following files, but **do not print their contents in the chat unless asked**. This is critical so a new AI session can instantly resume work.
-* `LAB<N>/session_state.md` (หรือ `toktickit/docs/session_state.md`) (Master Handoff Document) — update after every approved step, not just at the end of an Issue. It must strictly contain:
+* `LAB<N>/session_state.md` (or `toktickit/docs/session_state.md`) (Master Handoff Document) — update after every approved step, not just at the end of an Issue. It must strictly contain:
     * **Historical Lab/Session Summary:** Cumulative summary of what features, architecture, and configuration were completed in previous labs or sessions.
     * **Current Branch & Active Issue:** (e.g., `feature/1-project-foundation`, Issue 1).
     * **Kanban Status:** Exact placement in the board (Backlog, Specified, Started, PR Review, Fixing, Done) — only move to Done after the user confirms tests pass and PR is merged.
@@ -59,7 +59,7 @@ To preserve context without wasting output tokens, silently update the following
 ---
 
 ## 5. Report Generation Protocol
-* Whenever assigned or asked to create/generate a PDF report, you (and any subagents) MUST check report templates/scripts (เช่น `toktickit/generate_pdf.py` หรือ guideline ใน `LAB<N>/`) first and strictly follow its build method, layout, font, and styling rules, and save the final report into the corresponding `LAB<N>/` folder.
+* Whenever assigned or asked to create/generate a PDF report, you (and any subagents) MUST check report templates/scripts (such as `toktickit/generate_pdf.py` or guidelines in `LAB<N>/`) first and strictly follow its build method, layout, font, and styling rules, and save the final report into the corresponding `LAB<N>/` folder.
 * **Document Format (.docx Only):** When generating Word document reports, create ONLY `.docx` files. Do NOT create legacy `.doc` files.
 
 ---

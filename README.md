@@ -1,7 +1,7 @@
-# TokTickIT (ตอกติ๊กกิต) — IT Service Desk
+# TokTickIT — IT Service Desk
 
-> **วิชา:** CPE 334 — Introduction to Software Engineering in the Age of AI Agents (1/2026)  
-> **นักศึกษา:** Dechayut (67070503414) | **Peer Reviewer:** Vieng (67070503404)
+> **Course:** CPE 334 — Introduction to Software Engineering in the Age of AI Agents (1/2026)  
+> **Student:** Dechayut Panyawutvorakul (67070503414) | **Peer Reviewer:** Vieng (67070503404)
 
 ---
 
