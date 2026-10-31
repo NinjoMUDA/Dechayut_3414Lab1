@@ -1020,9 +1020,9 @@ const VALID_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
   IN_PROGRESS: [TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
   WAITING_FOR_REQUESTER: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
   RESOLVED: [TicketStatus.CLOSED, TicketStatus.REOPENED],
-  CLOSED: [TicketStatus.REOPENED],
-  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  CANCELLED: [TicketStatus.REOPENED],
+  CLOSED: [],
+  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  CANCELLED: [],
   PENDING: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
 };
 
@@ -1049,7 +1049,11 @@ app.patch(
         return;
       }
 
-      const { ticketOwnerId, itPriority, currentStatus, resolutionSummary } = req.body;
+      const { ticketOwnerId, itPriority, currentStatus, resolutionSummary, clientUpdatedAt } = req.body;
+      if (clientUpdatedAt && new Date(clientUpdatedAt).getTime() !== ticket.updatedAt.getTime()) {
+        res.status(409).json({ success: false, error: "Ticket has been modified by another user. Please reload the latest ticket details." });
+        return;
+      }
       const updateData: any = {};
 
       // 1. Ticket Ownership validation
@@ -1984,6 +1988,207 @@ app.patch(
       res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: "Unable to update action taken" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Ticket Workflow, Resolution Gate & State Transitions (Lab 4 - Issue #44)
+// ---------------------------------------------------------------------------
+
+const SPRINT4_VALID_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
+  NEW: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
+  OPEN: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.CANCELLED],
+  IN_PROGRESS: [TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  WAITING_FOR_REQUESTER: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  RESOLVED: [TicketStatus.CLOSED, TicketStatus.REOPENED],
+  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  CLOSED: [],
+  CANCELLED: [],
+  PENDING: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
+};
+
+// PATCH /api/tickets/:id/status
+app.patch(
+  "/api/tickets/:id/status",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const { newStatus, resolutionSummary, clientUpdatedAt } = req.body;
+
+      if (!newStatus || typeof newStatus !== "string") {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "New status is required.",
+        });
+        return;
+      }
+
+      const targetStatus = newStatus.toUpperCase() as TicketStatus;
+
+      // 1. Concurrency / Stale-update check (FR-07, AC-10)
+      if (clientUpdatedAt) {
+        const clientTime = new Date(clientUpdatedAt).getTime();
+        const dbTime = ticket.updatedAt.getTime();
+        if (clientTime !== dbTime) {
+          res.status(409).json({
+            error: "Conflict",
+            message: "Ticket has been modified by another user. Please reload the latest ticket details.",
+          });
+          return;
+        }
+      }
+
+      // 2. Terminal state check
+      if (ticket.currentStatus === TicketStatus.CLOSED || ticket.currentStatus === TicketStatus.CANCELLED) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: `Cannot transition from terminal status ${ticket.currentStatus}.`,
+        });
+        return;
+      }
+
+      // 3. State transition validity check (FR-05, BR-07, AC-08)
+      const allowed = SPRINT4_VALID_TRANSITIONS[ticket.currentStatus] || [];
+      if (!allowed.includes(targetStatus)) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: `Invalid status transition from ${ticket.currentStatus} to ${targetStatus}.`,
+        });
+        return;
+      }
+
+      // 4. Resolution Gate check (FR-06, BR-06, AC-09)
+      if (targetStatus === TicketStatus.RESOLVED) {
+        if (!resolutionSummary || typeof resolutionSummary !== "string" || resolutionSummary.trim().length < 5) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Resolution summary is required when resolving a ticket (min 5 characters).",
+          });
+          return;
+        }
+      }
+
+      const updateData: any = {
+        currentStatus: targetStatus,
+      };
+
+      if (targetStatus === TicketStatus.RESOLVED) {
+        updateData.resolutionSummary = resolutionSummary.trim();
+      }
+
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: updateData,
+      });
+
+      res.status(200).json({
+        ticketId: updated.id,
+        ticketNumber: updated.ticketNumber,
+        currentStatus: updated.currentStatus,
+        resolutionSummary: updated.resolutionSummary,
+        updatedAt: updated.updatedAt,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Unable to transition ticket status" });
+    }
+  }
+);
+
+// PATCH /api/tickets/:id/assign
+app.patch(
+  "/api/tickets/:id/assign",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const { ticketOwnerId } = req.body;
+
+      if (ticketOwnerId === null || ticketOwnerId === undefined || ticketOwnerId === "unassigned") {
+        const updated = await prisma.ticket.update({
+          where: { id: ticketId },
+          data: { ticketOwnerId: null },
+          include: { ticketOwner: { select: { id: true, name: true, email: true, role: true, isActive: true } } },
+        });
+        res.status(200).json(updated);
+        return;
+      }
+
+      const ownerIdNum = Number(ticketOwnerId);
+      if (isNaN(ownerIdNum)) {
+        res.status(400).json({ error: "Bad Request", message: "Invalid ticket owner ID." });
+        return;
+      }
+
+      const owner = await prisma.user.findUnique({
+        where: { id: ownerIdNum },
+      });
+
+      if (!owner) {
+        res.status(404).json({ error: "Not Found", message: "Assigned user not found." });
+        return;
+      }
+
+      // FR-11 & AC-11: Reject inactive user
+      if (!owner.isActive) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Cannot assign ticket to an inactive user.",
+        });
+        return;
+      }
+
+      // Check role
+      if (owner.role !== Role.IT_STAFF && owner.role !== Role.ADMIN) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Ticket owner must have role IT_STAFF or ADMIN.",
+        });
+        return;
+      }
+
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: { ticketOwnerId: ownerIdNum },
+        include: { ticketOwner: { select: { id: true, name: true, email: true, role: true, isActive: true } } },
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to assign ticket owner" });
     }
   }
 );
