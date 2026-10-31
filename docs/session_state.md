@@ -4,17 +4,17 @@
 - Lab 1: Completed and merged to main.
 - Lab 2: Completed and merged to main (PR #26). Built Requester ticketing, category selection, file attachments, and test suite.
 - Lab 3: Completed and merged to main. Built Authentication, IT Staff Queue & Operations, Admin User Management, and comprehensive regression test suites.
-- Lab 4: Sprint 4 decomposed into Issues #41 to #46. Staging branch `lab4-staging` created and pushed.
+- Lab 4: Sprint 4 Issue #41 (Engineering Contract & Specifications) completed and merged via PR #47 by @vienggg.
 
 ## Current Branch & Active Issue
-- **Branch:** `docs/lab4-contract` (branched from `lab4-staging`)
-- **Active Issue:** Issue #41 — Docs: Sprint 4 Engineering Contract & Specifications
+- **Branch:** `feature/42-actions-foundation` (branched from `lab4-staging`)
+- **Active Issue:** Issue #42 — Feature: Actions Taken Foundation & REST APIs
 
 ## Kanban Status
 | Issue | Status |
 |---|---|
-| #41 Docs: Sprint 4 Engineering Contract & Specifications | PR Review |
-| #42 Feature: Actions Taken Foundation & REST APIs | Backlog |
+| #41 Docs: Sprint 4 Engineering Contract & Specifications | Done |
+| #42 Feature: Actions Taken Foundation & REST APIs | Started |
 | #43 Feature: Actions Taken UI & Ticket Detail Integration | Backlog |
 | #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | Backlog |
 | #45 Feature: Role-Based Dashboards | Backlog |
@@ -35,23 +35,20 @@ toktickit/
 ## Database Status
 - Engine: PostgreSQL via Prisma
 - Migrations: Lab 3 schema active (`20260916100000_init_lab3`)
-- Pending Migration: `ActionTaken` model and relations planned for Issue #42
+- Pending Migration: `ActionTaken` model in Issue #42 (`add_actions_taken`)
 - Target Staging: `lab4-staging`
 
-## Task Checklist — Issue #41
-- [x] Create `lab4-staging` and push to remote
-- [x] Create GitHub Issues #41–#46
-- [x] Checkout `docs/lab4-contract`
-- [x] Draft `docs/lab-04/specification.md` (FRs, BRs, ACs, DB decisions, DoD)
-- [x] Draft `docs/lab-04/ui-spec.md` (Dashboards, Actions Taken, Workflow, Zen Green)
-- [x] Draft `docs/lab-04/api-spec.md` (Actions Taken, Dashboards, Transitions, Conflicts)
-- [x] Draft `docs/lab-04/tests.md` (Traceability Matrix)
-- [x] Draft `docs/lab-04/reviewer.md` & `docs/lab-04/ai-use.md`
-- [x] Commit docs, push branch to remote, and open PR #47 to `lab4-staging`
-- [x] Link PR to Issue #41 via Development panel
-- [x] Address review comments from @vienggg (BR-07 REOPEN rules, stale update, inactive assignee, tests)
-- [x] Reply to PR review thread and commit fixes to `docs/lab4-contract`
-- [ ] Peer review approval & merge into `lab4-staging` by @vienggg
+## Task Checklist — Issue #42
+- [x] Checkout `lab4-staging`, pull latest, create `feature/42-actions-foundation`
+- [x] Push branch and open early PR to `lab4-staging`
+- [ ] Add `ActionTaken` model to `schema.prisma` with foreign key relations and indexes
+- [ ] Run Prisma migration `add_actions_taken` and verify DB integrity
+- [ ] Update idempotent seed in `server/prisma/seed.ts` to include realistic Actions Taken
+- [ ] Implement REST APIs in Express server (`GET /api/tickets/:id/actions`, `POST /api/tickets/:id/actions`, `PATCH /api/tickets/:id/actions/:actionId`)
+- [ ] Implement Supertest test suite `server/tests/lab-04/actions-taken.api.test.ts` (API-01 to API-05)
+- [ ] Run tests and verify 100% pass rate
+- [ ] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
+- [ ] Peer review and merge by @vienggg
 
 ## Last Executed Command
-Review feedback corrections applied to `docs/lab-04/` and `session_state.md`.
+`git checkout -b feature/42-actions-foundation` (Exit code: 0)
