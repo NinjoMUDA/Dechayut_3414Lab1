@@ -24,6 +24,14 @@
 | UI-05 | UI | AC-07, FR-09 | IT Staff Dashboard renders metrics, priority cards, and quick actions | Metric cards and recent tickets rendered | `client/tests/lab-04/StaffDashboard.test.tsx` | Pass |
 | UI-06 | UI | AC-08, AC-09 | Ticket Workflow control permits only valid transitions | Dropdown options match allowed matrix | `client/tests/lab-04/TicketWorkflow.test.tsx` | Pass |
 | UI-07 | UI | BR-07, AC-08 | Reopen action button visibility and transition on RESOLVED ticket | Status changes to REOPENED with cyan badge | `client/tests/lab-04/TicketWorkflow.test.tsx` | Pass |
-| E2E-01 | E2E | AC-01, AC-04 | Complete Actions Taken creation, view, and follow-up flow | Action saved, appears in ticket feed with follow-up badge | `client/tests/lab-04/actions-taken-flow.spec.ts` | Planned |
-| E2E-02 | E2E | AC-08, AC-09 | Complete Ticket Resolution lifecycle with resolution gate | Status progresses from NEW -> IN_PROGRESS -> RESOLVED with summary | `client/tests/lab-04/ticket-resolution.spec.ts` | Planned |
-| E2E-03 | E2E | AC-06, AC-07 | End-to-end Dashboard navigation and drill-down verification | Clicking metric card navigates to correctly filtered queue | `client/tests/lab-04/dashboards.spec.ts` | Planned |
+| E2E-01 | E2E | AC-01, AC-04 | Complete Actions Taken creation, view, and follow-up flow | Action saved, appears in ticket feed with follow-up badge | `client/tests/lab-04/actions-taken-flow.spec.tsx` | Pass |
+| E2E-02 | E2E | AC-08, AC-09 | Complete Ticket Resolution lifecycle with resolution gate | Status progresses from NEW -> IN_PROGRESS -> RESOLVED with summary | `client/tests/lab-04/ticket-resolution.spec.tsx` | Pass |
+| E2E-03 | E2E | AC-06, AC-07 | End-to-end Dashboard navigation and drill-down verification | Clicking metric card navigates to correctly filtered queue | `client/tests/lab-04/dashboards.spec.tsx` | Pass |
+
+---
+
+## 2. Regression Test Execution Summary
+
+* **Server Test Suite (`server`):** 74 passing tests across 17 test files (100% pass)
+* **Client & E2E Test Suite (`client`):** 68 passing tests across 22 test files (100% pass)
+* **Total Automated Tests:** 142 passing tests with 0 failures

@@ -12,8 +12,8 @@
 | #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #50 | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Approved & Merged | 2026-11-01 |
-| #51 | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Pending Review | - |
-| TBD | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Not Started | - |
+| #51 | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Approved & Merged | 2026-11-01 |
+| #52 | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Pending Review | - |
 
 ---
 
@@ -95,11 +95,10 @@
   - Inactive assignee protection returns 400 Bad Request on `PATCH /api/tickets/:id/assign` and disables inactive users in UI dropdown.
   - Quick Reopen button visible on `RESOLVED` tickets with `.badge-status-reopened` cyan styling.
 
-
 ---
 
 ### Issue #45 — Feature: Role-Based Dashboards (PR #51)
-* **Status:** Ready for Peer Review (Changes Addressed)
+* **Status:** Approved and Merged into lab4-staging
 * **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/51
 * **Reviewer (@vienggg) Comment:**
   > Good progress on the dashboards (UI, drill-downs, empty states and the staff endpoint look right), but there is one security issue and two spec/cleanup issues to fix before merge.
@@ -124,3 +123,21 @@
   - `client/tests/lab-04/RequesterDashboard.test.tsx`: 2/2 tests passing (UI-04)
   - `client/tests/lab-04/StaffDashboard.test.tsx`: 3/3 tests passing (UI-05)
   - Full Regression Suite: 74/74 server tests passing, 64/64 client tests passing (138 total tests passing).
+* **Resolution Status:** Approved and merged into `lab4-staging` by @vienggg.
+
+---
+
+### Issue #46 — Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration (PR #52)
+* **Status:** Ready for Peer Review
+* **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/52
+* **Automated Test Results:**
+  - `client/tests/lab-04/actions-taken-flow.spec.tsx`: E2E-01 passing
+  - `client/tests/lab-04/ticket-resolution.spec.tsx`: E2E-02 passing
+  - `client/tests/lab-04/dashboards.spec.tsx`: E2E-03 passing
+  - Full Server Regression Suite: 74/74 tests passing across 17 test files (100% pass)
+  - Full Client & E2E Regression Suite: 68/68 tests passing across 22 test files (100% pass)
+  - Grand Total: 142 passing tests with 0 failures
+* **Key Implementations:**
+  - E2E flow tests covering complete Actions Taken lifecycle, Ticket Resolution gate with mandatory summary, and role-based Dashboard drill-down.
+  - Final regression suite hardening and verification across all Sprint 1-4 capabilities.
+  - Visual evidence and comprehensive 9-part PDF report compilation.

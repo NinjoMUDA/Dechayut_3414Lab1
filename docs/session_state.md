@@ -7,8 +7,9 @@
 - Lab 4: Sprint 4 Issues #41, #42, #43, #44, and #45 completed and merged via PR #47, PR #48, PR #49, PR #50, and PR #51.
 
 ## Current Branch & Active Issue
-- **Branch:** `release/lab-04` (branched from `lab4-staging`)
+- **Branch:** `release/lab-04` (target: `lab4-staging`)
 - **Active Issue:** Issue #46 — Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration
+- **Active PR:** PR #52 (https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/52)
 
 ## Kanban Status
 | Issue | Status |
@@ -18,7 +19,7 @@
 | #43 Feature: Actions Taken UI & Ticket Detail Integration | Done |
 | #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | Done |
 | #45 Feature: Role-Based Dashboards | Done |
-| #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | Started |
+| #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | In Progress (PR #52) |
 
 ## Project Structure
 ```
@@ -40,17 +41,17 @@ toktickit/
 
 ## Task Checklist — Issue #46
 - [x] Checkout `lab4-staging`, pull latest, create `release/lab-04`
-- [ ] Push branch and open early PR to `lab4-staging`
-- [ ] Implement E2E integration test suites:
-  - `actions-taken-flow.spec.ts` (E2E-01)
-  - `ticket-resolution.spec.ts` (E2E-02)
-  - `dashboards.spec.ts` (E2E-03)
-- [ ] Run full test suites across server, client, and e2e
+- [x] Push branch and open early PR to `lab4-staging` (PR #52)
+- [x] Implement E2E integration test suites:
+  - `actions-taken-flow.spec.tsx` (E2E-01) - Pass
+  - `ticket-resolution.spec.tsx` (E2E-02) - Pass
+  - `dashboards.spec.tsx` (E2E-03) - Pass
+- [x] Run full test suites across server, client, and e2e (142/142 tests passing)
+- [x] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
 - [ ] Capture visual evidence across Desktop (1280px), Tablet (768px), and Mobile (375px) breakpoints
-- [ ] Compile and generate final comprehensive Lab 4 PDF report matching 9 report parts
-- [ ] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
+- [ ] Compile and generate final comprehensive Lab 4 PDF and DOCX reports matching 9 report parts
 - [ ] Peer review and merge PR #52 into `lab4-staging` by @vienggg
 - [ ] Open final release PR from `lab4-staging` to `main`, peer review and merge
 
 ## Last Executed Command
-`git checkout -b release/lab-04` (Exit code: 0)
+`npm test` in client and server (Exit code: 0, 142/142 passing)
