@@ -28,10 +28,10 @@ const baseTicket: Ticket = {
   requesterResolved: false,
   createdAt: "2026-09-24T08:00:00.000Z",
   updatedAt: "2026-09-24T09:00:00.000Z",
-  requester: { id: 10, name: "Alice Requester", email: "alice@example.com" },
+  requester: { id: 10, name: "Alice Requester", email: "alice@example.com", isActive: true },
   category: { id: 1, name: "Network" },
   relatedSystem: { id: 1, name: "Global VPN" },
-  ticketOwner: { id: 1, name: "Sarah Chen", email: "sarah@toktickit.com" },
+  ticketOwner: { id: 1, name: "Sarah Chen", email: "sarah@toktickit.com", role: "IT_STAFF", isActive: true },
   attachments: [],
 };
 

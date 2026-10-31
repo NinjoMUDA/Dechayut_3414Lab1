@@ -362,10 +362,11 @@ export const ActionsTakenPanel: React.FC<ActionsTakenPanelProps> = ({
 
                     {/* Description */}
                     <div className="col-12">
-                      <label className="form-label small fw-semibold">
+                      <label className="form-label small fw-semibold" htmlFor="actionDescriptionInput">
                         Action Description <span className="text-danger">*</span>
                       </label>
                       <textarea
+                        id="actionDescriptionInput"
                         className={`form-control form-control-sm ${
                           formErrors.description ? "is-invalid" : ""
                         }`}
@@ -386,10 +387,11 @@ export const ActionsTakenPanel: React.FC<ActionsTakenPanelProps> = ({
 
                     {/* Result */}
                     <div className="col-12">
-                      <label className="form-label small fw-semibold">
+                      <label className="form-label small fw-semibold" htmlFor="actionResultInput">
                         Result <span className="text-danger">*</span>
                       </label>
                       <textarea
+                        id="actionResultInput"
                         className={`form-control form-control-sm ${
                           formErrors.result ? "is-invalid" : ""
                         }`}
@@ -432,10 +434,11 @@ export const ActionsTakenPanel: React.FC<ActionsTakenPanelProps> = ({
                     {/* Follow-up Note (Conditionally required) */}
                     {followUpRequired && (
                       <div className="col-12">
-                        <label className="form-label small fw-semibold text-warning-emphasis">
+                        <label className="form-label small fw-semibold text-warning-emphasis" htmlFor="followUpNoteInput">
                           Follow-Up Note <span className="text-danger">*</span>
                         </label>
                         <textarea
+                          id="followUpNoteInput"
                           className={`form-control form-control-sm ${
                             formErrors.followUpNote ? "is-invalid" : ""
                           }`}
@@ -457,10 +460,11 @@ export const ActionsTakenPanel: React.FC<ActionsTakenPanelProps> = ({
 
                     {/* Attachment Notes */}
                     <div className="col-12">
-                      <label className="form-label small fw-semibold text-muted">
+                      <label className="form-label small fw-semibold text-muted" htmlFor="attachmentNotesInput">
                         Attachment Reference Notes (Optional)
                       </label>
                       <input
+                        id="attachmentNotesInput"
                         type="text"
                         className="form-control form-control-sm"
                         placeholder="e.g. Look at diagnostic_log.txt or battery_report.png"
