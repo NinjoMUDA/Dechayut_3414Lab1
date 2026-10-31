@@ -57,6 +57,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <li className="nav-item">
                   <button
                     className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("dashboard")}
+                  >
+                    📊 Dashboard
+                  </button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
                       currentView === "my-tickets" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
                     }`}
                     onClick={() => onNavigate("my-tickets")}
@@ -78,20 +88,42 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
 
             {user?.role === "IT_STAFF" && (
-              <li className="nav-item">
-                <button
-                  className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                    currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                  }`}
-                  onClick={() => onNavigate("staff-queue")}
-                >
-                  📥 My Queue
-                </button>
-              </li>
+              <>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("dashboard")}
+                  >
+                    📊 Dashboard
+                  </button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("staff-queue")}
+                  >
+                    📥 My Queue
+                  </button>
+                </li>
+              </>
             )}
 
             {user?.role === "ADMIN" && (
               <>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
+                      currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                    }`}
+                    onClick={() => onNavigate("dashboard")}
+                  >
+                    📊 Dashboard
+                  </button>
+                </li>
                 <li className="nav-item">
                   <button
                     className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${

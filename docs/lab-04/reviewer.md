@@ -11,8 +11,8 @@
 | #47 | #41 | Docs: Sprint 4 Engineering Contract & Specifications | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
-| #50 | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Pending Review | - |
-| TBD | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Not Started | - |
+| #50 | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Approved & Merged | 2026-11-01 |
+| #51 | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Pending Review | - |
 | TBD | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Not Started | - |
 
 ---
@@ -94,3 +94,20 @@
   - Mandatory `resolutionSummary` (min 5 characters) when transitioning to `RESOLVED`.
   - Inactive assignee protection returns 400 Bad Request on `PATCH /api/tickets/:id/assign` and disables inactive users in UI dropdown.
   - Quick Reopen button visible on `RESOLVED` tickets with `.badge-status-reopened` cyan styling.
+
+
+---
+
+### Issue #45 — Feature: Role-Based Dashboards (PR #51)
+* **Status:** Ready for Peer Review
+* **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/51
+* **Automated Test Results:**
+  - `server/tests/lab-04/requester-dashboard.api.test.ts`: 4/4 tests passing (API-06, API-12)
+  - `server/tests/lab-04/staff-dashboard.api.test.ts`: 4/4 tests passing (API-07)
+  - `client/tests/lab-04/RequesterDashboard.test.tsx`: 2/2 tests passing (UI-04)
+  - `client/tests/lab-04/StaffDashboard.test.tsx`: 3/3 tests passing (UI-05)
+  - Full Regression Suite: 75/75 server tests passing, 64/64 client tests passing.
+* **Key Implementations:**
+  - Requester Dashboard with 4 metric cards (My Open, In Progress, Resolved, Closed), recent tickets table, empty state prompt, and quick actions.
+  - IT Staff Dashboard with 5 metric cards (New, Open, In Progress, Waiting for Requester, My Assigned), priority breakdown card (Urgent, High, Medium, Low), queue drill-downs, and Admin stats summary.
+  - Zero-data / empty table handling (clean 0 counts and accessible empty state banners).

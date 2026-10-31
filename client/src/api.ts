@@ -14,6 +14,13 @@ import {
   InternalNote,
   TicketStatus,
   ActionTaken,
+  RequesterDashboardMetrics,
+  RequesterRecentTicket,
+  RequesterDashboardResponse,
+  StaffDashboardMetrics,
+  PriorityBreakdown,
+  StaffRecentTicket,
+  StaffDashboardResponse,
 } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -833,6 +840,56 @@ export async function apiAssignTicket(
   return json;
 }
 
+export async function apiGetRequesterDashboard(
+  requesterId?: number,
+  token?: string | null
+): Promise<RequesterDashboardResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (requesterId) {
+    headers["x-requester-id"] = String(requesterId);
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/dashboards/requester`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load requester dashboard");
+  }
+  return json;
+}
+
+export async function apiGetStaffDashboard(
+  token?: string | null
+): Promise<StaffDashboardResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/dashboards/staff`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load staff dashboard");
+  }
+  return json;
+}
+
 export { API_URL };
 export type {
   Category,
@@ -850,4 +907,11 @@ export type {
   InternalNote,
   TicketStatus,
   ActionTaken,
+  RequesterDashboardMetrics,
+  RequesterRecentTicket,
+  RequesterDashboardResponse,
+  StaffDashboardMetrics,
+  PriorityBreakdown,
+  StaffRecentTicket,
+  StaffDashboardResponse,
 };
