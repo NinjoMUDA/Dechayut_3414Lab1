@@ -1020,9 +1020,9 @@ const VALID_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
   IN_PROGRESS: [TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
   WAITING_FOR_REQUESTER: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
   RESOLVED: [TicketStatus.CLOSED, TicketStatus.REOPENED],
-  CLOSED: [TicketStatus.REOPENED],
-  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  CANCELLED: [TicketStatus.REOPENED],
+  CLOSED: [],
+  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  CANCELLED: [],
   PENDING: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
 };
 
@@ -1049,7 +1049,11 @@ app.patch(
         return;
       }
 
-      const { ticketOwnerId, itPriority, currentStatus, resolutionSummary } = req.body;
+      const { ticketOwnerId, itPriority, currentStatus, resolutionSummary, clientUpdatedAt } = req.body;
+      if (clientUpdatedAt && new Date(clientUpdatedAt).getTime() !== ticket.updatedAt.getTime()) {
+        res.status(409).json({ success: false, error: "Ticket has been modified by another user. Please reload the latest ticket details." });
+        return;
+      }
       const updateData: any = {};
 
       // 1. Ticket Ownership validation
@@ -1715,4 +1719,679 @@ app.post(
   }
 );
 
+// ---------------------------------------------------------------------------
+// Actions Taken Endpoints (Lab 4 - Issue #42)
+// ---------------------------------------------------------------------------
+
+// GET /api/tickets/:id/actions
+app.get(
+  "/api/tickets/:id/actions",
+  authenticateToken,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      // Authorization check (FR-04): Requester can only read actions on tickets they own
+      if (req.user?.role === Role.REQUESTER && ticket.requesterId !== req.user.id) {
+        res.status(403).json({
+          error: "Forbidden",
+          message: "You do not have permission to view actions on this ticket.",
+        });
+        return;
+      }
+
+      const actions = await prisma.actionTaken.findMany({
+        where: { ticketId },
+        orderBy: { actionDateTime: "asc" },
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json({
+        ticketId,
+        actions,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Unable to retrieve actions taken" });
+    }
+  }
+);
+
+// POST /api/tickets/:id/actions
+app.post(
+  "/api/tickets/:id/actions",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const {
+        actionDateTime,
+        description,
+        result,
+        followUpRequired,
+        followUpNote,
+        attachmentNotes,
+      } = req.body;
+
+      // Validation
+      if (!description || typeof description !== "string" || description.trim().length < 5) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Description is required and must be at least 5 characters.",
+        });
+        return;
+      }
+
+      if (!result || typeof result !== "string" || result.trim().length < 3) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Result is required and must be at least 3 characters.",
+        });
+        return;
+      }
+
+      const isFollowUpRequired = Boolean(followUpRequired);
+      if (isFollowUpRequired) {
+        if (!followUpNote || typeof followUpNote !== "string" || followUpNote.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Follow-up note is required when follow-up is needed.",
+          });
+          return;
+        }
+      }
+
+      const parsedDateTime = actionDateTime ? new Date(actionDateTime) : new Date();
+      if (isNaN(parsedDateTime.getTime())) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Invalid action date/time format.",
+        });
+        return;
+      }
+
+      const action = await prisma.actionTaken.create({
+        data: {
+          ticketId,
+          actionDateTime: parsedDateTime,
+          description: description.trim(),
+          result: result.trim(),
+          performedById: req.user!.id,
+          followUpRequired: isFollowUpRequired,
+          followUpNote: isFollowUpRequired ? followUpNote.trim() : null,
+          attachmentNotes: attachmentNotes && typeof attachmentNotes === "string" ? attachmentNotes.trim() : null,
+        },
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json(action);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to create action taken" });
+    }
+  }
+);
+
+// PATCH /api/tickets/:id/actions/:actionId
+app.patch(
+  "/api/tickets/:id/actions/:actionId",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      const actionId = Number(req.params.actionId);
+
+      if (isNaN(ticketId) || isNaN(actionId)) {
+        res.status(400).json({ error: "Invalid ticket or action ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const existingAction = await prisma.actionTaken.findFirst({
+        where: { id: actionId, ticketId },
+      });
+
+      if (!existingAction) {
+        res.status(404).json({ error: "Action Taken record not found for this ticket." });
+        return;
+      }
+
+      const {
+        actionDateTime,
+        description,
+        result,
+        followUpRequired,
+        followUpNote,
+        attachmentNotes,
+      } = req.body;
+
+      const updateData: any = {};
+
+      if (description !== undefined) {
+        if (typeof description !== "string" || description.trim().length < 5) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Description must be at least 5 characters.",
+          });
+          return;
+        }
+        updateData.description = description.trim();
+      }
+
+      if (result !== undefined) {
+        if (typeof result !== "string" || result.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Result must be at least 3 characters.",
+          });
+          return;
+        }
+        updateData.result = result.trim();
+      }
+
+      if (actionDateTime !== undefined) {
+        const parsed = new Date(actionDateTime);
+        if (isNaN(parsed.getTime())) {
+          res.status(400).json({ error: "Bad Request", message: "Invalid action date/time." });
+          return;
+        }
+        updateData.actionDateTime = parsed;
+      }
+
+      const newFollowUpRequired = followUpRequired !== undefined ? Boolean(followUpRequired) : existingAction.followUpRequired;
+      updateData.followUpRequired = newFollowUpRequired;
+
+      if (newFollowUpRequired) {
+        const noteToValidate = followUpNote !== undefined ? followUpNote : existingAction.followUpNote;
+        if (!noteToValidate || typeof noteToValidate !== "string" || noteToValidate.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Follow-up note is required when follow-up is needed.",
+          });
+          return;
+        }
+        if (followUpNote !== undefined) {
+          updateData.followUpNote = followUpNote.trim();
+        }
+      } else {
+        if (followUpRequired !== undefined) {
+          updateData.followUpNote = null;
+        }
+      }
+
+      if (attachmentNotes !== undefined) {
+        updateData.attachmentNotes = attachmentNotes ? String(attachmentNotes).trim() : null;
+      }
+
+      const updated = await prisma.actionTaken.update({
+        where: { id: actionId },
+        data: updateData,
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to update action taken" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Ticket Workflow, Resolution Gate & State Transitions (Lab 4 - Issue #44)
+// ---------------------------------------------------------------------------
+
+const SPRINT4_VALID_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
+  NEW: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
+  OPEN: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.CANCELLED],
+  IN_PROGRESS: [TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  WAITING_FOR_REQUESTER: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  RESOLVED: [TicketStatus.CLOSED, TicketStatus.REOPENED],
+  REOPENED: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.RESOLVED, TicketStatus.CANCELLED],
+  CLOSED: [],
+  CANCELLED: [],
+  PENDING: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED],
+};
+
+// PATCH /api/tickets/:id/status
+app.patch(
+  "/api/tickets/:id/status",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const { newStatus, resolutionSummary, clientUpdatedAt } = req.body;
+
+      if (!newStatus || typeof newStatus !== "string") {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "New status is required.",
+        });
+        return;
+      }
+
+      const targetStatus = newStatus.toUpperCase() as TicketStatus;
+
+      // 1. Concurrency / Stale-update check (FR-07, AC-10)
+      if (clientUpdatedAt) {
+        const clientTime = new Date(clientUpdatedAt).getTime();
+        const dbTime = ticket.updatedAt.getTime();
+        if (clientTime !== dbTime) {
+          res.status(409).json({
+            error: "Conflict",
+            message: "Ticket has been modified by another user. Please reload the latest ticket details.",
+          });
+          return;
+        }
+      }
+
+      // 2. Terminal state check
+      if (ticket.currentStatus === TicketStatus.CLOSED || ticket.currentStatus === TicketStatus.CANCELLED) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: `Cannot transition from terminal status ${ticket.currentStatus}.`,
+        });
+        return;
+      }
+
+      // 3. State transition validity check (FR-05, BR-07, AC-08)
+      const allowed = SPRINT4_VALID_TRANSITIONS[ticket.currentStatus] || [];
+      if (!allowed.includes(targetStatus)) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: `Invalid status transition from ${ticket.currentStatus} to ${targetStatus}.`,
+        });
+        return;
+      }
+
+      // 4. Resolution Gate check (FR-06, BR-06, AC-09)
+      if (targetStatus === TicketStatus.RESOLVED) {
+        if (!resolutionSummary || typeof resolutionSummary !== "string" || resolutionSummary.trim().length < 5) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Resolution summary is required when resolving a ticket (min 5 characters).",
+          });
+          return;
+        }
+      }
+
+      const updateData: any = {
+        currentStatus: targetStatus,
+      };
+
+      if (targetStatus === TicketStatus.RESOLVED) {
+        updateData.resolutionSummary = resolutionSummary.trim();
+      }
+
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: updateData,
+      });
+
+      res.status(200).json({
+        ticketId: updated.id,
+        ticketNumber: updated.ticketNumber,
+        currentStatus: updated.currentStatus,
+        resolutionSummary: updated.resolutionSummary,
+        updatedAt: updated.updatedAt,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Unable to transition ticket status" });
+    }
+  }
+);
+
+// PATCH /api/tickets/:id/assign
+app.patch(
+  "/api/tickets/:id/assign",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const { ticketOwnerId } = req.body;
+
+      if (ticketOwnerId === null || ticketOwnerId === undefined || ticketOwnerId === "unassigned") {
+        const updated = await prisma.ticket.update({
+          where: { id: ticketId },
+          data: { ticketOwnerId: null },
+          include: { ticketOwner: { select: { id: true, name: true, email: true, role: true, isActive: true } } },
+        });
+        res.status(200).json(updated);
+        return;
+      }
+
+      const ownerIdNum = Number(ticketOwnerId);
+      if (isNaN(ownerIdNum)) {
+        res.status(400).json({ error: "Bad Request", message: "Invalid ticket owner ID." });
+        return;
+      }
+
+      const owner = await prisma.user.findUnique({
+        where: { id: ownerIdNum },
+      });
+
+      if (!owner) {
+        res.status(404).json({ error: "Not Found", message: "Assigned user not found." });
+        return;
+      }
+
+      // FR-11 & AC-11: Reject inactive user
+      if (!owner.isActive) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Cannot assign ticket to an inactive user.",
+        });
+        return;
+      }
+
+      // Check role
+      if (owner.role !== Role.IT_STAFF && owner.role !== Role.ADMIN) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Ticket owner must have role IT_STAFF or ADMIN.",
+        });
+        return;
+      }
+
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: { ticketOwnerId: ownerIdNum },
+        include: { ticketOwner: { select: { id: true, name: true, email: true, role: true, isActive: true } } },
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to assign ticket owner" });
+    }
+  }
+);
+
+
+// ---------------------------------------------------------------------------
+// Lab 4 Issue 45 — Requester Dashboard (GET /api/dashboards/requester)
+// ---------------------------------------------------------------------------
+app.get(
+  "/api/dashboards/requester",
+  authenticateToken,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const requesterId = req.user!.id;
+
+      const [
+        myOpenTickets,
+        inProgress,
+        resolved,
+        closed,
+        waitingForRequester,
+        recentTickets,
+      ] = await Promise.all([
+        prisma.ticket.count({
+          where: {
+            requesterId,
+            currentStatus: { in: [TicketStatus.NEW, TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.WAITING_FOR_REQUESTER, TicketStatus.REOPENED] },
+          },
+        }),
+        prisma.ticket.count({
+          where: { requesterId, currentStatus: TicketStatus.IN_PROGRESS },
+        }),
+        prisma.ticket.count({
+          where: { requesterId, currentStatus: TicketStatus.RESOLVED },
+        }),
+        prisma.ticket.count({
+          where: { requesterId, currentStatus: TicketStatus.CLOSED },
+        }),
+        prisma.ticket.count({
+          where: { requesterId, currentStatus: TicketStatus.WAITING_FOR_REQUESTER },
+        }),
+        prisma.ticket.findMany({
+          where: { requesterId },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+      ]);
+
+      res.status(200).json({
+        metrics: {
+          myOpenTickets,
+          inProgress,
+          resolved,
+          closed,
+          waitingForRequester,
+        },
+        recentTickets,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Unable to retrieve requester dashboard" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Lab 4 Issue 45 — IT Staff Dashboard (GET /api/dashboards/staff)
+// ---------------------------------------------------------------------------
+app.get(
+  "/api/dashboards/staff",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const currentUserId = req.user?.id;
+
+      const [
+        newTickets,
+        openTickets,
+        inProgress,
+        waitingForRequester,
+        myAssigned,
+        unassigned,
+        urgentCount,
+        highCount,
+        mediumCount,
+        lowCount,
+        recentQueueTickets,
+        totalUsers,
+        activeUsers,
+      ] = await Promise.all([
+        prisma.ticket.count({ where: { currentStatus: TicketStatus.NEW } }),
+        prisma.ticket.count({ where: { currentStatus: TicketStatus.OPEN } }),
+        prisma.ticket.count({ where: { currentStatus: TicketStatus.IN_PROGRESS } }),
+        prisma.ticket.count({ where: { currentStatus: TicketStatus.WAITING_FOR_REQUESTER } }),
+        prisma.ticket.count({
+          where: {
+            ticketOwnerId: currentUserId,
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+          },
+        }),
+        prisma.ticket.count({
+          where: {
+            ticketOwnerId: null,
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+          },
+        }),
+        // Priority breakdown for active tickets (not RESOLVED, CLOSED or CANCELLED - BR-09)
+        prisma.ticket.count({
+          where: {
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+            OR: [
+              { itPriority: Priority.URGENT },
+              { itPriority: null, requestedPriority: Priority.URGENT },
+            ],
+          },
+        }),
+        prisma.ticket.count({
+          where: {
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+            OR: [
+              { itPriority: Priority.HIGH },
+              { itPriority: null, requestedPriority: Priority.HIGH },
+            ],
+          },
+        }),
+        prisma.ticket.count({
+          where: {
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+            OR: [
+              { itPriority: Priority.MEDIUM },
+              { itPriority: null, requestedPriority: Priority.MEDIUM },
+            ],
+          },
+        }),
+        prisma.ticket.count({
+          where: {
+            currentStatus: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.CANCELLED] },
+            OR: [
+              { itPriority: Priority.LOW },
+              { itPriority: null, requestedPriority: Priority.LOW },
+            ],
+          },
+        }),
+        prisma.ticket.findMany({
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            requester: { select: { name: true } },
+            updatedAt: true,
+          },
+        }),
+        req.user?.role === Role.ADMIN ? prisma.user.count() : Promise.resolve(0),
+        req.user?.role === Role.ADMIN ? prisma.user.count({ where: { isActive: true } }) : Promise.resolve(0),
+      ]);
+
+      const responsePayload: any = {
+        metrics: {
+          newTickets,
+          openTickets,
+          inProgress,
+          waitingForRequester,
+          myAssigned,
+          unassigned,
+        },
+        priorityBreakdown: {
+          URGENT: urgentCount,
+          HIGH: highCount,
+          MEDIUM: mediumCount,
+          LOW: lowCount,
+        },
+        recentQueueTickets,
+      };
+
+      if (req.user?.role === Role.ADMIN) {
+        responsePayload.adminStats = {
+          totalUsers,
+          activeUsers,
+        };
+      }
+
+      res.status(200).json(responsePayload);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to retrieve staff dashboard" });
+    }
+  }
+);
+
+
+// --------------------------------------------------------------------
 export default app;

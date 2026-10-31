@@ -11,9 +11,11 @@ import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 import { UserManagement } from "./components/UserManagement.js";
+import { RequesterDashboard } from "./components/RequesterDashboard.js";
+import { StaffDashboard } from "./components/StaffDashboard.js";
 import { checkSystem, Category, Ticket, getRequesters } from "./api.js";
 
-type ViewMode = "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
+type ViewMode = "dashboard" | "my-tickets" | "create-ticket" | "ticket-detail" | "staff-queue" | "user-admin";
 
 function MainApp() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -113,6 +115,34 @@ function MainApp() {
 
       {/* Main Content Area */}
       <main className="container-fluid px-3 px-md-4 py-4 flex-grow-1" style={{ maxWidth: 1200 }}>
+        {/* Dashboard View (Lab 4 Issue #45) */}
+        {currentView === "dashboard" && (
+          user?.role === "IT_STAFF" || user?.role === "ADMIN" ? (
+            <StaffDashboard
+              onSelectTicket={(ticketId) => {
+                setSelectedTicketId(ticketId);
+                setCurrentView("ticket-detail");
+              }}
+              onNavigateQueue={() => {
+                setCurrentView("staff-queue");
+              }}
+            />
+          ) : (
+            <RequesterDashboard
+              onSelectTicket={(ticketId) => {
+                setSelectedTicketId(ticketId);
+                setCurrentView("ticket-detail");
+              }}
+              onNavigateCreate={() => {
+                setCurrentView("create-ticket");
+              }}
+              onNavigateMyTickets={() => {
+                setCurrentView("my-tickets");
+              }}
+            />
+          )
+        )}
+
         {/* Create Ticket View */}
         {currentView === "create-ticket" && (
           <CreateTicket

@@ -76,6 +76,26 @@ export interface InternalNote {
   };
 }
 
+export interface ActionTaken {
+  id: number;
+  ticketId: number;
+  actionDateTime: string;
+  description: string;
+  result: string;
+  performedById: number;
+  performedBy: {
+    id: number;
+    name: string;
+    email: string;
+    role: Role;
+  };
+  followUpRequired: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Ticket {
   id: number;
   ticketNumber: string;
@@ -99,6 +119,7 @@ export interface Ticket {
   attachments?: Attachment[];
   comments?: PublicComment[];
   notes?: InternalNote[];
+  actionsTaken?: ActionTaken[];
 }
 
 export interface PaginatedResponse<T> {
@@ -138,3 +159,61 @@ export interface StaffQueueFilterParams {
   pageSize?: number;
 }
 
+export interface RequesterDashboardMetrics {
+  myOpenTickets: number;
+  inProgress: number;
+  resolved: number;
+  closed: number;
+  waitingForRequester: number;
+}
+
+export interface RequesterRecentTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  requestedPriority: Priority;
+  updatedAt: string;
+}
+
+export interface RequesterDashboardResponse {
+  metrics: RequesterDashboardMetrics;
+  recentTickets: RequesterRecentTicket[];
+}
+
+export interface StaffDashboardMetrics {
+  newTickets: number;
+  openTickets: number;
+  inProgress: number;
+  waitingForRequester: number;
+  myAssigned: number;
+  unassigned: number;
+}
+
+export interface PriorityBreakdown {
+  URGENT: number;
+  HIGH: number;
+  MEDIUM: number;
+  LOW: number;
+}
+
+export interface StaffRecentTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  itPriority?: Priority | null;
+  requestedPriority?: Priority | null;
+  requester?: { name: string };
+  updatedAt: string;
+}
+
+export interface StaffDashboardResponse {
+  metrics: StaffDashboardMetrics;
+  priorityBreakdown: PriorityBreakdown;
+  recentQueueTickets: StaffRecentTicket[];
+  adminStats?: {
+    totalUsers: number;
+    activeUsers: number;
+  };
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext.js";
+import { ActionsTakenPanel } from "./ActionsTakenPanel.js";
 import {
   Ticket,
   User,
@@ -11,6 +12,7 @@ import {
   getDownloadUrl,
   apiGetStaffUsers,
   apiUpdateStaffTicket,
+  apiUpdateTicketStatus,
   apiGetComments,
   apiAddComment,
   apiGetNotes,
@@ -29,9 +31,9 @@ const VALID_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
   IN_PROGRESS: ["WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
   WAITING_FOR_REQUESTER: ["IN_PROGRESS", "RESOLVED", "CANCELLED"],
   RESOLVED: ["CLOSED", "REOPENED"],
-  CLOSED: ["REOPENED"],
-  REOPENED: ["IN_PROGRESS", "RESOLVED"],
-  CANCELLED: ["REOPENED"],
+  CLOSED: [],
+  REOPENED: ["IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
+  CANCELLED: [],
   PENDING: ["OPEN", "IN_PROGRESS", "CANCELLED"],
 };
 
@@ -65,6 +67,7 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
   const [isSavingOps, setIsSavingOps] = useState<boolean>(false);
   const [opsError, setOpsError] = useState<string | null>(null);
   const [opsSuccess, setOpsSuccess] = useState<boolean>(false);
+  const [isConflict, setIsConflict] = useState<boolean>(false);
 
   const loadTicket = useCallback(async () => {
     setLoading(true);
@@ -113,9 +116,16 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
     e.preventDefault();
     setIsSavingOps(true);
     setOpsError(null);
+    setIsConflict(false);
     setOpsSuccess(false);
 
     try {
+      if (selectedStatus === "RESOLVED" && (!resolutionSummary || resolutionSummary.trim().length < 5)) {
+        setOpsError("Resolution summary is required when resolving a ticket (min 5 characters).");
+        setIsSavingOps(false);
+        return;
+      }
+
       const ownerIdPayload =
         selectedOwnerId === "unassigned" || !selectedOwnerId
           ? null
@@ -128,6 +138,7 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
           itPriority: selectedPriority,
           currentStatus: selectedStatus,
           resolutionSummary: selectedStatus === "RESOLVED" ? resolutionSummary : undefined,
+          clientUpdatedAt: ticket?.updatedAt,
         },
         token
       );
@@ -135,8 +146,12 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
       setTicket(updated);
       setOpsSuccess(true);
       setTimeout(() => setOpsSuccess(false), 3000);
-    } catch (err) {
-      setOpsError(err instanceof Error ? err.message : "Failed to update ticket operations");
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : "Failed to update ticket operations";
+      if (msg.toLowerCase().includes("conflict") || msg.toLowerCase().includes("modified")) {
+        setIsConflict(true);
+      }
+      setOpsError(msg);
     } finally {
       setIsSavingOps(false);
     }
@@ -204,7 +219,7 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
     if (norm === "OPEN" || norm === "IN_PROGRESS") badgeClass = "badge-status-inprogress";
     if (norm === "RESOLVED" || norm === "CLOSED") badgeClass = "badge-status-resolved";
     if (norm === "WAITING_FOR_REQUESTER") badgeClass = "bg-warning text-dark";
-    if (norm === "REOPENED") badgeClass = "bg-danger text-white";
+    if (norm === "REOPENED") badgeClass = "badge-status-reopened";
 
     return (
       <span className={`badge rounded-pill px-2 py-1 ${badgeClass} small`}>
@@ -236,6 +251,7 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
   }
 
   const allowedStatuses = VALID_TRANSITIONS[ticket.currentStatus] || [];
+  const isTerminal = ticket.currentStatus === "CLOSED" || ticket.currentStatus === "CANCELLED";
 
   return (
     <div className="container-fluid px-0">
@@ -404,9 +420,16 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
               )}
             </div>
           </div>
-        </div>
+                    {/* Actions Taken Panel */}
+            <ActionsTakenPanel
+              ticketId={ticket.id}
+              token={token}
+              currentUser={user}
+              readOnly={false}
+            />
+          </div>
 
-        {/* Right Column: Staff Operations & Communications */}
+          {/* Right Column: Staff Operations & Communications */}
         <div className="col-12 col-lg-5">
           {/* Operations Card */}
           <div className="zen-card p-4 mb-4 shadow-sm">
@@ -421,7 +444,22 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
               </div>
             )}
             {opsError && (
-              <div className="alert alert-danger py-2 small mb-3">⚠️ {opsError}</div>
+              <div className="alert alert-danger py-2 small mb-3">
+                <div>⚠️ {opsError}</div>
+                {isConflict && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm mt-2"
+                    onClick={() => {
+                      setIsConflict(false);
+                      setOpsError(null);
+                      loadTicket();
+                    }}
+                  >
+                    🔄 Reload Ticket
+                  </button>
+                )}
+              </div>
             )}
 
             <form onSubmit={handleSaveOperations}>
@@ -450,8 +488,8 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
                 >
                   <option value="unassigned">Unassigned</option>
                   {staffUsers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.role})
+                    <option key={s.id} value={s.id} disabled={!s.isActive}>
+                      {s.name} ({s.role}){s.isActive ? "" : " (Inactive)"}
                     </option>
                   ))}
                 </select>
@@ -475,6 +513,38 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
                 </select>
               </div>
 
+              {/* Reopen Action for RESOLVED Tickets (UI-07) */}
+              {ticket.currentStatus === "RESOLVED" && (
+                <div className="mb-3 p-3 bg-light border border-info rounded">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong className="text-info small">Issue Recurring?</strong>
+                      <div className="text-muted small">Requester reported that the problem persists.</div>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="reopen-ticket-btn"
+                      className="btn btn-outline-info btn-sm fw-semibold"
+                      disabled={isSavingOps}
+                      onClick={async () => {
+                        try {
+                          setIsSavingOps(true);
+                          setOpsError(null);
+                          await apiUpdateTicketStatus(ticket.id, "REOPENED", undefined, ticket.updatedAt, token);
+                          await loadTicket();
+                        } catch (err: any) {
+                          setOpsError(err instanceof Error ? err.message : "Failed to reopen ticket");
+                        } finally {
+                          setIsSavingOps(false);
+                        }
+                      }}
+                    >
+                      🔄 Reopen Ticket
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Ticket Status Transition */}
               <div className="mb-3">
                 <label htmlFor="ticketStatusSelect" className="form-label small fw-semibold text-muted mb-1">
@@ -485,6 +555,7 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
                   className="form-select form-select-sm"
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
+                  disabled={isTerminal || isSavingOps}
                 >
                   <option value={ticket.currentStatus}>
                     {ticket.currentStatus} (Current)
@@ -496,7 +567,9 @@ export const StaffTicketDetail: React.FC<StaffTicketDetailProps> = ({
                   ))}
                 </select>
                 <div className="form-text small">
-                  Permitted transitions from {ticket.currentStatus}: {allowedStatuses.join(", ") || "None"}
+                  {isTerminal
+                    ? "This ticket is in a terminal state. No further transitions permitted."
+                    : `Permitted transitions from ${ticket.currentStatus}: ${allowedStatuses.join(", ") || "None"}`}
                 </div>
               </div>
 

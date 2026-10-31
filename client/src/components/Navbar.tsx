@@ -28,105 +28,45 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark zen-header shadow-sm py-2" style={{ backgroundColor: "#006B3C" }}>
-      <div className="container-fluid px-3 px-md-4">
-        {/* Brand */}
-        <a
-          className="navbar-brand fw-bold d-flex align-items-center me-4"
-          href="#home"
-          onClick={(e) => {
-            e.preventDefault();
-            if (user?.role === "IT_STAFF") {
-              onNavigate("staff-queue");
-            } else if (user?.role === "ADMIN") {
-              onNavigate("user-admin");
-            } else {
-              onNavigate("my-tickets");
-            }
-          }}
-        >
-          <span className="me-2 fs-5">🎫</span>
-          <span>TokTickIT</span>
-        </a>
-
-        {/* Navigation Links based on Role */}
-        <div className="d-flex align-items-center flex-grow-1">
-          <ul className="navbar-nav me-auto mb-0 d-flex flex-row gap-2">
-            {(!user || user.role === "REQUESTER") && (
-              <>
-                <li className="nav-item">
-                  <button
-                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                      currentView === "my-tickets" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                    }`}
-                    onClick={() => onNavigate("my-tickets")}
-                  >
-                    📋 My Tickets
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                      currentView === "create-ticket" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                    }`}
-                    onClick={() => onNavigate("create-ticket")}
-                  >
-                    ➕ Create Ticket
-                  </button>
-                </li>
-              </>
-            )}
-
-            {user?.role === "IT_STAFF" && (
-              <li className="nav-item">
-                <button
-                  className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                    currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                  }`}
-                  onClick={() => onNavigate("staff-queue")}
-                >
-                  📥 My Queue
-                </button>
-              </li>
-            )}
-
-            {user?.role === "ADMIN" && (
-              <>
-                <li className="nav-item">
-                  <button
-                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                      currentView === "user-admin" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                    }`}
-                    onClick={() => onNavigate("user-admin")}
-                  >
-                    👥 User Management
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className={`nav-link btn btn-link text-decoration-none px-3 py-1 ${
-                      currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
-                    }`}
-                    onClick={() => onNavigate("staff-queue")}
-                  >
-                    📥 Ticket Queue
-                  </button>
-                </li>
-              </>
-            )}
-          </ul>
+    <nav className="navbar navbar-dark zen-header shadow-sm py-2" style={{ backgroundColor: "#006B3C" }}>
+      <div className="container-fluid px-2 px-md-4">
+        {/* Brand & Profile Row */}
+        <div className="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
+          {/* Brand */}
+          <a
+            className="navbar-brand fw-bold d-flex align-items-center me-2 me-md-4"
+            href="#home"
+            onClick={(e) => {
+              e.preventDefault();
+              if (user?.role === "IT_STAFF") {
+                onNavigate("staff-queue");
+              } else if (user?.role === "ADMIN") {
+                onNavigate("user-admin");
+              } else {
+                onNavigate("my-tickets");
+              }
+            }}
+          >
+            <span className="me-2 fs-5">🎫</span>
+            <span>TokTickIT</span>
+          </a>
 
           {/* User Profile Area */}
-          <div className="d-flex align-items-center ms-auto gap-3">
+          <div className="d-flex align-items-center ms-auto gap-2">
             {user ? (
-              <div className="d-flex align-items-center gap-2">
-                <div className="d-flex align-items-center text-white px-3 py-1 rounded-pill" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+              <div className="d-flex align-items-center gap-1 gap-md-2">
+                <div
+                  className="d-flex align-items-center text-white px-2 py-1 rounded-pill small"
+                  style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                >
                   <span className="me-1">👤</span>
-                  <span className="fw-medium small">{user.name}</span>
-                  {getRoleBadge(user.role)}
+                  <span className="fw-medium text-truncate" style={{ maxWidth: "120px" }}>
+                    {user.name}
+                  </span>
+                  <span className="d-none d-sm-inline">{getRoleBadge(user.role)}</span>
                 </div>
                 <button
-                  className="btn btn-outline-light btn-sm rounded-pill px-3"
+                  className="btn btn-outline-light btn-sm rounded-pill px-2 py-1 small"
                   onClick={async () => {
                     clearRequester();
                     await logout();
@@ -149,6 +89,106 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
             ) : null}
+          </div>
+
+          {/* Navigation Links based on Role */}
+          <div className="w-100 d-flex align-items-center mt-1">
+            <ul className="navbar-nav me-auto mb-0 d-flex flex-row flex-wrap gap-1 gap-md-2">
+              {(!user || user.role === "REQUESTER") && (
+                <>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("dashboard")}
+                    >
+                      📊 Dashboard
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "my-tickets" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("my-tickets")}
+                    >
+                      📋 My Tickets
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "create-ticket" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("create-ticket")}
+                    >
+                      ➕ Create Ticket
+                    </button>
+                  </li>
+                </>
+              )}
+
+              {user?.role === "IT_STAFF" && (
+                <>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("dashboard")}
+                    >
+                      📊 Dashboard
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("staff-queue")}
+                    >
+                      📥 My Queue
+                    </button>
+                  </li>
+                </>
+              )}
+
+              {user?.role === "ADMIN" && (
+                <>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "dashboard" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("dashboard")}
+                    >
+                      📊 Dashboard
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "user-admin" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("user-admin")}
+                    >
+                      👥 User Management
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link btn btn-link text-decoration-none px-2 px-md-3 py-1 small ${
+                        currentView === "staff-queue" ? "active fw-semibold text-white border-bottom border-2" : "text-white-50"
+                      }`}
+                      onClick={() => onNavigate("staff-queue")}
+                    >
+                      📥 Ticket Queue
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
           </div>
         </div>
       </div>

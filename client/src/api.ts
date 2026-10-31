@@ -13,6 +13,14 @@ import {
   PublicComment,
   InternalNote,
   TicketStatus,
+  ActionTaken,
+  RequesterDashboardMetrics,
+  RequesterRecentTicket,
+  RequesterDashboardResponse,
+  StaffDashboardMetrics,
+  PriorityBreakdown,
+  StaffRecentTicket,
+  StaffDashboardResponse,
 } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -408,6 +416,7 @@ export async function apiUpdateStaffTicket(
     itPriority?: Priority;
     currentStatus?: TicketStatus;
     resolutionSummary?: string;
+    clientUpdatedAt?: string;
   },
   token?: string | null
 ): Promise<Ticket> {
@@ -674,6 +683,209 @@ export async function apiResetUserPassword(
   return json.data;
 }
 
+// ---------------------------------------------------------------------------
+// Actions Taken APIs (Lab 4 - Issue #43)
+// ---------------------------------------------------------------------------
+
+export interface CreateActionTakenPayload {
+  actionDateTime?: string;
+  description: string;
+  result: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+}
+
+export interface UpdateActionTakenPayload {
+  actionDateTime?: string;
+  description?: string;
+  result?: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+}
+
+export async function apiGetActionsTaken(
+  ticketId: number,
+  token?: string | null
+): Promise<{ ticketId: number; actions: ActionTaken[] }> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load actions taken");
+  }
+  return json;
+}
+
+export async function apiCreateActionTaken(
+  ticketId: number,
+  data: CreateActionTakenPayload,
+  token?: string | null
+): Promise<ActionTaken> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to create action taken");
+  }
+  return json;
+}
+
+export async function apiUpdateActionTaken(
+  ticketId: number,
+  actionId: number,
+  data: UpdateActionTakenPayload,
+  token?: string | null
+): Promise<ActionTaken> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions/${actionId}`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update action taken");
+  }
+  return json;
+}
+
+export async function apiUpdateTicketStatus(
+  ticketId: number,
+  newStatus: TicketStatus,
+  resolutionSummary?: string,
+  clientUpdatedAt?: string,
+  token?: string | null
+): Promise<{ ticketId: number; ticketNumber: string; currentStatus: TicketStatus; resolutionSummary?: string | null; updatedAt: string }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/status`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({
+      newStatus,
+      resolutionSummary,
+      clientUpdatedAt,
+    }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    if (res.status === 409) {
+      throw new Error(json.message || "Conflict: Ticket has been modified by another user.");
+    }
+    throw new Error(json.message || json.error || "Failed to update ticket status");
+  }
+  return json;
+}
+
+export async function apiAssignTicket(
+  ticketId: number,
+  ticketOwnerId: number | null,
+  token?: string | null
+): Promise<Ticket> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/assign`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ ticketOwnerId }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to assign ticket");
+  }
+  return json;
+}
+
+export async function apiGetRequesterDashboard(
+  token?: string | null
+): Promise<RequesterDashboardResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/dashboards/requester`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load requester dashboard");
+  }
+  return json;
+}
+
+export async function apiGetStaffDashboard(
+  token?: string | null
+): Promise<StaffDashboardResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/dashboards/staff`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load staff dashboard");
+  }
+  return json;
+}
+
 export { API_URL };
 export type {
   Category,
@@ -690,4 +902,12 @@ export type {
   PublicComment,
   InternalNote,
   TicketStatus,
+  ActionTaken,
+  RequesterDashboardMetrics,
+  RequesterRecentTicket,
+  RequesterDashboardResponse,
+  StaffDashboardMetrics,
+  PriorityBreakdown,
+  StaffRecentTicket,
+  StaffDashboardResponse,
 };

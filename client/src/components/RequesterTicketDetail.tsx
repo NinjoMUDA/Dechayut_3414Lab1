@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRequester } from "../context/RequesterContext.js";
 import { Ticket, getTicketDetail } from "../api.js";
 import { AttachmentSection } from "./AttachmentSection.js";
+import { ActionsTakenPanel } from "./ActionsTakenPanel.js";
 
 interface RequesterTicketDetailProps {
   ticketId: number;
@@ -68,6 +69,7 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
     let badgeClass = "badge-status-new";
     if (norm === "OPEN" || norm === "IN_PROGRESS") badgeClass = "badge-status-inprogress";
     if (norm === "RESOLVED" || norm === "CLOSED") badgeClass = "badge-status-resolved";
+    if (norm === "REOPENED") badgeClass = "badge-status-reopened";
 
     return <span className={`badge rounded-pill px-3 py-1 ${badgeClass}`}>{s}</span>;
   };
@@ -228,6 +230,12 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
         </div>
       </div>
 
+      {/* Actions Taken Section (Read-Only for Requester) */}
+      <ActionsTakenPanel
+        ticketId={ticket.id}
+        readOnly={true}
+      />
+
       {/* Attachments Section */}
       <AttachmentSection
         ticketId={ticket.id}
@@ -237,3 +245,4 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
     </div>
   );
 };
+export default RequesterTicketDetail;
