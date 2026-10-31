@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../context/AuthContext.js";
 import { useRequester } from "../context/RequesterContext.js";
 import {
   RequesterDashboardResponse,
@@ -16,24 +17,24 @@ export const RequesterDashboard: React.FC<RequesterDashboardProps> = ({
   onNavigateCreate,
   onNavigateMyTickets,
 }) => {
+  const { token } = useAuth();
   const { activeRequester } = useRequester();
   const [data, setData] = useState<RequesterDashboardResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async () => {
-    if (!activeRequester) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await apiGetRequesterDashboard(activeRequester.id);
+      const res = await apiGetRequesterDashboard(token);
       setData(res);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard");
     } finally {
       setLoading(false);
     }
-  }, [activeRequester]);
+  }, [token]);
 
   useEffect(() => {
     loadDashboard();

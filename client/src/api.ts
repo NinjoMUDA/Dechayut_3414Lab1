@@ -841,15 +841,11 @@ export async function apiAssignTicket(
 }
 
 export async function apiGetRequesterDashboard(
-  requesterId?: number,
   token?: string | null
 ): Promise<RequesterDashboardResponse> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  if (requesterId) {
-    headers["x-requester-id"] = String(requesterId);
-  }
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }

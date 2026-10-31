@@ -82,7 +82,7 @@
 ---
 
 ### Issue #44 — Feature: Ticket Workflow, Resolution Gate & State Transitions (PR #50)
-* **Status:** Ready for Peer Review
+* **Status:** Approved and Merged into lab4-staging
 * **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/50
 * **Automated Test Results:**
   - `server/tests/lab-04/ticket-workflow.api.test.ts`: 6/6 tests passing (API-08, API-09, API-10, API-11, API-13). Full server suite 67/67 passing.
@@ -99,15 +99,28 @@
 ---
 
 ### Issue #45 — Feature: Role-Based Dashboards (PR #51)
-* **Status:** Ready for Peer Review
+* **Status:** Ready for Peer Review (Changes Addressed)
 * **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/51
+* **Reviewer (@vienggg) Comment:**
+  > Good progress on the dashboards (UI, drill-downs, empty states and the staff endpoint look right), but there is one security issue and two spec/cleanup issues to fix before merge.
+  > 
+  > **Blocking: the requester dashboard can be read without logging in**
+  > `GET /api/dashboards/requester` uses optionalAuthenticate and, when there is no login, takes the requester from ?requesterId= or x-requester-id. Anyone who knows or guesses an id can read that person's ticket counts and recent tickets. Fix: use authenticateToken and always use req.user.id. Remove header/query fallback and replace test with 401 unauthenticated check.
+  > 
+  > **Blocking (cleanup): the dashboard block is in server/src/app.ts twice**
+  > Please delete the duplicate.
+  > 
+  > **Should fix: counts don't match BR-09**
+  > BR-09 says staff Unassigned and Assigned-to-Me counts exclude RESOLVED, CLOSED and CANCELLED. The code only excludes CLOSED and CANCELLED. Exclude RESOLVED too.
+* **Author (@NinjoMUDA) Reply:**
+  > Thank you @vienggg for the rigorous code review! All three issues have been resolved directly on `feature/45-dashboards`:
+  > 1. **Authentication Enforcement:** Changed `GET /api/dashboards/requester` to use `authenticateToken` and bound requester context strictly to `req.user.id`. Removed all unauthenticated header/query fallbacks. Updated API test to verify 401 Unauthorized for unauthenticated requests.
+  > 2. **Duplicate Route Cleanup:** Removed the duplicate ~220 line dashboard route registration block from `server/src/app.ts`.
+  > 3. **BR-09 State Filter Alignment:** Excluded `RESOLVED` tickets (along with `CLOSED` and `CANCELLED`) from `myAssigned`, `unassigned`, and priority breakdown counts in `GET /api/dashboards/staff`.
+  > Full regression passed: 74/74 server tests, 64/64 client tests. Ready for re-review!
 * **Automated Test Results:**
-  - `server/tests/lab-04/requester-dashboard.api.test.ts`: 4/4 tests passing (API-06, API-12)
+  - `server/tests/lab-04/requester-dashboard.api.test.ts`: 3/3 tests passing (API-06, API-12, 401 Unauthorized check)
   - `server/tests/lab-04/staff-dashboard.api.test.ts`: 4/4 tests passing (API-07)
   - `client/tests/lab-04/RequesterDashboard.test.tsx`: 2/2 tests passing (UI-04)
   - `client/tests/lab-04/StaffDashboard.test.tsx`: 3/3 tests passing (UI-05)
-  - Full Regression Suite: 75/75 server tests passing, 64/64 client tests passing.
-* **Key Implementations:**
-  - Requester Dashboard with 4 metric cards (My Open, In Progress, Resolved, Closed), recent tickets table, empty state prompt, and quick actions.
-  - IT Staff Dashboard with 5 metric cards (New, Open, In Progress, Waiting for Requester, My Assigned), priority breakdown card (Urgent, High, Medium, Low), queue drill-downs, and Admin stats summary.
-  - Zero-data / empty table handling (clean 0 counts and accessible empty state banners).
+  - Full Regression Suite: 74/74 server tests passing, 64/64 client tests passing (138 total tests passing).

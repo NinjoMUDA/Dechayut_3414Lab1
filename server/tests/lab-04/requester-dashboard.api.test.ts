@@ -59,14 +59,9 @@ describe("Lab 4 - Requester Dashboard API (Issue #45 - FR-08, AC-06, AC-12)", ()
     }
   });
 
-  it("API-06 (via Header): Retrieves dashboard using x-requester-id header without auth token", async () => {
-    const res = await request(app)
-      .get("/api/dashboards/requester")
-      .set("x-requester-id", String(requesterId));
-
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty("metrics");
-    expect(typeof res.body.metrics.myOpenTickets).toBe("number");
+  it("Rejects unauthenticated access with 401 Unauthorized", async () => {
+    const res = await request(app).get("/api/dashboards/requester");
+    expect(res.status).toBe(401);
   });
 
   it("API-12: Zero-data handling returns clean zero counts and empty array for requester with no tickets", async () => {
@@ -112,11 +107,5 @@ describe("Lab 4 - Requester Dashboard API (Issue #45 - FR-08, AC-06, AC-12)", ()
       waitingForRequester: 0,
     });
     expect(res.body.recentTickets).toEqual([]);
-  });
-
-  it("Returns 400 Bad Request when no requester identity is provided", async () => {
-    const res = await request(app).get("/api/dashboards/requester");
-    expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/Requester identity is required/i);
   });
 });

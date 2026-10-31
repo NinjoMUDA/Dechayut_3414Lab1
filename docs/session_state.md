@@ -40,16 +40,17 @@ toktickit/
 
 ## Task Checklist — Issue #45
 - [x] Checkout `lab4-staging`, pull latest, create `feature/45-dashboards`
-- [x] Implement backend endpoint `GET /api/dashboards/requester` in `server/src/app.ts` (AC-06, FR-08)
-- [x] Implement backend endpoint `GET /api/dashboards/staff` in `server/src/app.ts` (AC-07, FR-09)
+- [x] Implement backend endpoint `GET /api/dashboards/requester` in `server/src/app.ts` (AC-06, FR-08, authenticated token required)
+- [x] Implement backend endpoint `GET /api/dashboards/staff` in `server/src/app.ts` (AC-07, FR-09, excluding RESOLVED/CLOSED/CANCELLED per BR-09)
 - [x] Verify zero-data empty handling in backend dashboard endpoints (AC-12)
-- [x] Automated Supertest test suites `requester-dashboard.api.test.ts` and `staff-dashboard.api.test.ts` (API-06, API-07, API-12)
+- [x] Automated Supertest test suites `requester-dashboard.api.test.ts` and `staff-dashboard.api.test.ts` (API-06, API-07, API-12, 401 check)
 - [x] Build Requester Dashboard UI component (`RequesterDashboard.tsx`) with Zen Green metric cards, quick actions, and recent tickets (UI-04)
 - [x] Build IT Staff Dashboard UI component (`StaffDashboard.tsx`) with metric cards, priority breakdown, quick actions, and drill-down links (UI-05)
 - [x] Automated Vitest component test suites `RequesterDashboard.test.tsx` and `StaffDashboard.test.tsx`
-- [x] Run full regression test suites (75/75 server tests, 64/64 client tests passing)
+- [x] Fix PR #51 review comments: enforce authentication on requester dashboard, remove duplicate route registration, align BR-09 status filters
+- [x] Run full regression test suites (74/74 server tests, 64/64 client tests passing)
 - [x] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
 - [ ] Peer review and merge by @vienggg
 
 ## Last Executed Command
-`npm test` in client (64 passed) and server (75 passed) (Exit code: 0)
+`npm test` in client (64 passed) and server (74 passed) (Exit code: 0)

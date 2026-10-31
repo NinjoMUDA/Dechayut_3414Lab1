@@ -20,6 +20,15 @@ vi.mock("../../src/context/RequesterContext.js", () => ({
   }),
 }));
 
+// Mock AuthContext
+vi.mock("../../src/context/AuthContext.js", () => ({
+  useAuth: () => ({
+    token: "mock-requester-token",
+    user: mockRequester,
+    isAuthenticated: true,
+  }),
+}));
+
 const mockDashboardData: RequesterDashboardResponse = {
   metrics: {
     myOpenTickets: 3,
