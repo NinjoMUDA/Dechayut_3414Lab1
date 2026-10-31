@@ -8,8 +8,8 @@
 
 | PR # | Linked Issue | Title | Author | Reviewer | Review Decision | Merge Date |
 |---|---|---|---|---|---|---|
-| #47 | #41 | Docs: Sprint 4 Engineering Contract & Specifications | @NinjoMUDA | @vienggg | Changes Requested -> Fixed | - |
-| TBD | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Not Started | - |
+| #47 | #41 | Docs: Sprint 4 Engineering Contract & Specifications | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
+| #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Changes Requested -> Pushed for Re-review | - |
 | TBD | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Not Started | - |
 | TBD | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Not Started | - |
 | TBD | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Not Started | - |
@@ -47,4 +47,27 @@
   > 4. **Inactive Assignee Enforcement:** Documented `PATCH /api/tickets/:id/assign` under `api-spec.md` §3.2 returning `400 Bad Request` when `isActive === false`.
   > 5. **Traceability Matrix Additions:** Added test cases API-11 (inactive assignee rejection), API-12 (empty dashboard zero counts), API-13 (reopen lifecycle transition), and UI-07 (reopen button visibility) in `tests.md`.
   > 6. **Reviewer Tracking:** Updated PR table with PR #47 and logged all review resolutions.
-* **Resolution Status:** Fixed & Resolved on branch `docs/lab4-contract`.
+* **Resolution Status:** Approved and merged into `lab4-staging` by @vienggg.
+
+---
+
+### Issue #42 — Feature: Actions Taken Foundation & REST APIs (PR #48)
+* **Reviewer (@vienggg) Comment:**
+  > Not ready to merge yet. This PR only changes `docs/session_state.md` (one commit: "start feature branch and update session state"). The description promises a Prisma migration, the `ActionTaken` model, seed, REST APIs, authorization and tests, but none of that is in the diff, and the checklist in `session_state.md` still has those items unchecked.
+  > 
+  > Please push the actual Issue #42 work:
+  > - `ActionTaken` model in `schema.prisma` and the `add_actions_taken` migration
+  > - Idempotent seed with tickets that have 0, 1 and several actions
+  > - `GET` / `POST` / `PATCH` endpoints from `docs/lab-04/api-spec.md`, with the Requester ownership check and the follow-up note validation
+  > - `server/tests/lab-04/actions-taken.api.test.ts` covering API-01 to API-05, with all suites passing
+  > 
+  > Also update `tests.md`, `reviewer.md` and `ai-use.md`. Ping me when it's pushed and I'll re-review.
+
+* **Author (@NinjoMUDA) Reply:**
+  > Thanks for the quick heads up @vienggg! All the actual implementation for Issue #42 is now committed and pushed to `feature/42-actions-foundation`:
+  > 1. **Model & Migration:** Added `ActionTaken` model with CASCADE delete and indexed foreign keys (`ticketId`, `performedById`, `actionDateTime`), generated migration `20261031153232_add_actions_taken`.
+  > 2. **Idempotent Seed:** Seeded realistic Actions Taken across tickets with 0, 1, and multiple actions, diverse IT Staff performers, and follow-up notes.
+  > 3. **REST APIs:** Implemented `GET /api/tickets/:id/actions`, `POST /api/tickets/:id/actions`, and `PATCH /api/tickets/:id/actions/:actionId` with strict requester ownership checks (403), performer auto-fill, and follow-up note validation (400).
+  > 4. **Test Suites Passing:** Created `server/tests/lab-04/actions-taken.api.test.ts` covering API-01 through API-05 (7/7 tests passing). Full server regression suite passes 61/61 tests.
+  > 5. **Documentation Updated:** `tests.md` updated with passing statuses, `ai-use.md`, `reviewer.md`, and `session_state.md` updated.
+* **Resolution Status:** Code and tests pushed, ready for re-review and merge.

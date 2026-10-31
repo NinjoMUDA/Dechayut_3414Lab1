@@ -1715,4 +1715,277 @@ app.post(
   }
 );
 
+// ---------------------------------------------------------------------------
+// Actions Taken Endpoints (Lab 4 - Issue #42)
+// ---------------------------------------------------------------------------
+
+// GET /api/tickets/:id/actions
+app.get(
+  "/api/tickets/:id/actions",
+  authenticateToken,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      // Authorization check (FR-04): Requester can only read actions on tickets they own
+      if (req.user?.role === Role.REQUESTER && ticket.requesterId !== req.user.id) {
+        res.status(403).json({
+          error: "Forbidden",
+          message: "You do not have permission to view actions on this ticket.",
+        });
+        return;
+      }
+
+      const actions = await prisma.actionTaken.findMany({
+        where: { ticketId },
+        orderBy: { actionDateTime: "asc" },
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json({
+        ticketId,
+        actions,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Unable to retrieve actions taken" });
+    }
+  }
+);
+
+// POST /api/tickets/:id/actions
+app.post(
+  "/api/tickets/:id/actions",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      if (isNaN(ticketId)) {
+        res.status(400).json({ error: "Invalid ticket ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket) {
+        res.status(404).json({ error: "Ticket not found" });
+        return;
+      }
+
+      const {
+        actionDateTime,
+        description,
+        result,
+        followUpRequired,
+        followUpNote,
+        attachmentNotes,
+      } = req.body;
+
+      // Validation
+      if (!description || typeof description !== "string" || description.trim().length < 5) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Description is required and must be at least 5 characters.",
+        });
+        return;
+      }
+
+      if (!result || typeof result !== "string" || result.trim().length < 3) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Result is required and must be at least 3 characters.",
+        });
+        return;
+      }
+
+      const isFollowUpRequired = Boolean(followUpRequired);
+      if (isFollowUpRequired) {
+        if (!followUpNote || typeof followUpNote !== "string" || followUpNote.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Follow-up note is required when follow-up is needed.",
+          });
+          return;
+        }
+      }
+
+      const parsedDateTime = actionDateTime ? new Date(actionDateTime) : new Date();
+      if (isNaN(parsedDateTime.getTime())) {
+        res.status(400).json({
+          error: "Bad Request",
+          message: "Invalid action date/time format.",
+        });
+        return;
+      }
+
+      const action = await prisma.actionTaken.create({
+        data: {
+          ticketId,
+          actionDateTime: parsedDateTime,
+          description: description.trim(),
+          result: result.trim(),
+          performedById: req.user!.id,
+          followUpRequired: isFollowUpRequired,
+          followUpNote: isFollowUpRequired ? followUpNote.trim() : null,
+          attachmentNotes: attachmentNotes && typeof attachmentNotes === "string" ? attachmentNotes.trim() : null,
+        },
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json(action);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to create action taken" });
+    }
+  }
+);
+
+// PATCH /api/tickets/:id/actions/:actionId
+app.patch(
+  "/api/tickets/:id/actions/:actionId",
+  authenticateToken,
+  requireRole(Role.IT_STAFF, Role.ADMIN),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const ticketId = Number(req.params.id);
+      const actionId = Number(req.params.actionId);
+
+      if (isNaN(ticketId) || isNaN(actionId)) {
+        res.status(400).json({ error: "Invalid ticket or action ID" });
+        return;
+      }
+
+      const prisma = getPrisma();
+      const existingAction = await prisma.actionTaken.findFirst({
+        where: { id: actionId, ticketId },
+      });
+
+      if (!existingAction) {
+        res.status(404).json({ error: "Action Taken record not found for this ticket." });
+        return;
+      }
+
+      const {
+        actionDateTime,
+        description,
+        result,
+        followUpRequired,
+        followUpNote,
+        attachmentNotes,
+      } = req.body;
+
+      const updateData: any = {};
+
+      if (description !== undefined) {
+        if (typeof description !== "string" || description.trim().length < 5) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Description must be at least 5 characters.",
+          });
+          return;
+        }
+        updateData.description = description.trim();
+      }
+
+      if (result !== undefined) {
+        if (typeof result !== "string" || result.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Result must be at least 3 characters.",
+          });
+          return;
+        }
+        updateData.result = result.trim();
+      }
+
+      if (actionDateTime !== undefined) {
+        const parsed = new Date(actionDateTime);
+        if (isNaN(parsed.getTime())) {
+          res.status(400).json({ error: "Bad Request", message: "Invalid action date/time." });
+          return;
+        }
+        updateData.actionDateTime = parsed;
+      }
+
+      const newFollowUpRequired = followUpRequired !== undefined ? Boolean(followUpRequired) : existingAction.followUpRequired;
+      updateData.followUpRequired = newFollowUpRequired;
+
+      if (newFollowUpRequired) {
+        const noteToValidate = followUpNote !== undefined ? followUpNote : existingAction.followUpNote;
+        if (!noteToValidate || typeof noteToValidate !== "string" || noteToValidate.trim().length < 3) {
+          res.status(400).json({
+            error: "Bad Request",
+            message: "Follow-up note is required when follow-up is needed.",
+          });
+          return;
+        }
+        if (followUpNote !== undefined) {
+          updateData.followUpNote = followUpNote.trim();
+        }
+      } else {
+        if (followUpRequired !== undefined) {
+          updateData.followUpNote = null;
+        }
+      }
+
+      if (attachmentNotes !== undefined) {
+        updateData.attachmentNotes = attachmentNotes ? String(attachmentNotes).trim() : null;
+      }
+
+      const updated = await prisma.actionTaken.update({
+        where: { id: actionId },
+        data: updateData,
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Unable to update action taken" });
+    }
+  }
+);
+
 export default app;

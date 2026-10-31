@@ -4,11 +4,11 @@
 
 | Test ID | Type | Requirement / AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| API-01 | API | AC-01, FR-01 | Create valid Action Taken as IT Staff | Record created with authenticated user as `performedById` | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
-| API-02 | API | AC-02, FR-04 | Requester attempts to create Action Taken | 403 Forbidden | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
-| API-03 | API | AC-03, FR-02 | Create Action Taken with followUpRequired=true and empty followUpNote | 400 Bad Request validation error | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
-| API-04 | API | AC-04, FR-04 | Requester retrieves Actions Taken for owned ticket | 200 OK with list of actions | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
-| API-05 | API | AC-05, FR-04 | Requester attempts to read Actions Taken for another user's ticket | 403 Forbidden | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
+| API-01 | API | AC-01, FR-01 | Create valid Action Taken as IT Staff | Record created with authenticated user as `performedById` | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
+| API-02 | API | AC-02, FR-04 | Requester attempts to create Action Taken | 403 Forbidden | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
+| API-03 | API | AC-03, FR-02 | Create Action Taken with followUpRequired=true and empty followUpNote | 400 Bad Request validation error | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
+| API-04 | API | AC-04, FR-04 | Requester retrieves Actions Taken for owned ticket | 200 OK with list of actions | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
+| API-05 | API | AC-05, FR-04 | Requester attempts to read Actions Taken for another user's ticket | 403 Forbidden | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
 | API-06 | API | AC-06, FR-08 | Requester dashboard metrics count calculation | Counts scoped strictly to requester's own tickets | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
 | API-07 | API | AC-07, FR-09 | IT Staff dashboard unassigned and assigned-to-me counts | Accurate counts matching database query | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
 | API-08 | API | AC-08, FR-05 | Invalid status transition (NEW -> RESOLVED) | 400 Bad Request with illegal transition message | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |

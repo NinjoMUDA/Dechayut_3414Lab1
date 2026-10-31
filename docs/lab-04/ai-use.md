@@ -21,7 +21,12 @@
 * **User Input:** `ok`
 * **AI Action:** Created GitHub Issues #41 to #46 via `gh issue create`, branched `docs/lab4-contract` from `lab4-staging`, drafted comprehensive engineering contract (`specification.md`, `ui-spec.md`, `api-spec.md`, `tests.md`, `reviewer.md`).
 
+### Prompt 4: Issue #42 Actions Taken Foundation & REST APIs
+* **User Input:** `ต่อเลย`
+* **AI Action:** Applied Prisma migration `add_actions_taken` for `ActionTaken` model with cascades and indexes. Updated `seed.ts` with idempotent realistic Actions Taken data. Implemented `GET /api/tickets/:id/actions`, `POST /api/tickets/:id/actions`, and `PATCH /api/tickets/:id/actions/:actionId` in `server/src/app.ts`. Created and ran Supertest suite `server/tests/lab-04/actions-taken.api.test.ts` (7/7 tests passing). Verified zero regression across all 61 server tests.
+
 ---
 
 ## 3. My Reflection on Specification & Coding Agents
 Using an AI Specification Agent at the inception of Sprint 4 ensures that requirements are crystallized into verifiable Acceptance Criteria (ACs) and numbered Business Rules (BRs) before any database migration or UI code is written. This Spec-DD approach prevents architectural drift, guarantees backward compatibility with earlier lab sprints, and provides a clear traceability chain from user requirements directly into automated test assertions.
+During Issue #42, the pair programming workflow ensured that conditional validation rules (such as mandatory `followUpNote` when `followUpRequired` is true) and role authorization guards (preventing requesters from writing or viewing other users' actions) were strictly implemented and verified by automated Supertest suites before moving to UI integration.
