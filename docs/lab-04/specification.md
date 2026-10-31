@@ -35,7 +35,7 @@ Deliver the final operational increments of TokTickIT: a reliable, role-enforced
 * **FR-04 (Actions Taken Read Visibility):** Requesters can view all Actions Taken records associated with Tickets they own. Requesters are blocked (HTTP 403) from creating or updating Actions Taken.
 * **FR-05 (Ticket Status Transition Matrix):** The system enforces valid state transitions according to the defined lifecycle matrix. Invalid transitions return HTTP 400 with a descriptive error.
 * **FR-06 (Resolution Gate Enforcement):** Changing a Ticket status to `RESOLVED` requires an IT Staff or Admin role and a non-empty `resolutionSummary`. Requester advisory toggle (`requesterResolved`) does not automatically alter `currentStatus`.
-* **FR-07 (Stale Update Detection):** Ticket status update requests must supply the client's current `updatedAt` timestamp. If the database record has a newer timestamp, the request is rejected with HTTP 409 Conflict.
+* **FR-07 (Stale Update Detection):** Ticket status update requests must supply the client's current `clientUpdatedAt` timestamp. If the database record's `updatedAt` does not match `clientUpdatedAt`, the request is rejected with HTTP 409 Conflict.
 * **FR-08 (Requester Dashboard API):** The backend provides an endpoint returning authorized operational metrics (total open, waiting for requester, recently updated, recently resolved) scoped strictly to tickets owned by the authenticated Requester.
 * **FR-09 (IT Staff Dashboard API):** The backend provides an endpoint returning operational metrics (unassigned count, assigned-to-me count, counts by status and priority, recent tickets) for IT Staff and Admins.
 * **FR-10 (Dashboard Drill-Down Navigation):** All metric cards on Requester and IT Staff dashboards must support accessible navigation to filtered ticket lists.
@@ -53,7 +53,7 @@ Deliver the final operational increments of TokTickIT: a reliable, role-enforced
 * **BR-04 (Conditional Follow-Up Constraint):** If `followUpRequired` is `true`, `followUpNote` is strictly required (minimum 3 characters). If `followUpRequired` is `false`, `followUpNote` is optional or null.
 * **BR-05 (Requester Advisory Separation):** When a Requester flags `requesterResolved: true`, the Ticket's `currentStatus` remains unchanged (e.g., `IN_PROGRESS` or `WAITING_FOR_REQUESTER`). Only IT Staff/Admin can formally transition the status to `RESOLVED`.
 * **BR-06 (Resolution Preconditions):** A transition to `RESOLVED` must contain a non-empty `resolutionSummary`. A Ticket cannot be resolved if it is already `CLOSED` or `CANCELLED`.
-* **BR-07 (Reopen Transition Preconditions):** Only Tickets in `RESOLVED` or `CLOSED` status may be transitioned to `REOPENED`. Reopening transitions the state to `OPEN`.
+* **BR-07 (Reopen Transition Preconditions & Terminal States):** Only Tickets in `RESOLVED` status may be transitioned to `REOPENED`. When reopened, the Ticket enters `REOPENED` status. From `REOPENED`, permitted transitions are `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `RESOLVED`, and `CANCELLED`. Tickets in `CLOSED` and `CANCELLED` statuses are strictly terminal and cannot be transitioned to any other status.
 * **BR-08 (Requester Dashboard Isolation):** Requester metrics are calculated solely against Tickets where `requesterId == currentUserId`. No cross-requester data is exposed.
 * **BR-09 (Dashboard Calculation Rules):**
   * Requester Open Tickets: Count of owned tickets where `currentStatus IN ('NEW', 'OPEN', 'IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'REOPENED')`.
@@ -133,7 +133,7 @@ model ActionTaken {
 * **AC-05:** Given an authenticated Requester viewing another user's Ticket, the request is rejected with HTTP 403 Forbidden.
 * **AC-06:** Given an authenticated Requester requesting `/api/dashboards/requester`, the returned metrics count only Tickets where `requesterId` matches the requester's ID.
 * **AC-07:** Given an authenticated IT Staff requesting `/api/dashboards/staff`, metrics accurately reflect unassigned tickets, tickets assigned to current user, and status breakdowns.
-* **AC-08:** Given a Ticket in `NEW` status, permitted transitions are `OPEN`, `IN_PROGRESS`, and `CANCELLED`. Transitions to `RESOLVED` or `CLOSED` directly from `NEW` are rejected with HTTP 400.
+* **AC-08:** Given a Ticket in `NEW` status, permitted transitions are `OPEN`, `IN_PROGRESS`, and `CANCELLED`. Direct transitions from `NEW` to `RESOLVED`, `CLOSED`, or `REOPENED` are rejected with HTTP 400.
 * **AC-09:** Given a request to set status to `RESOLVED`, if `resolutionSummary` is missing or blank, the transition is rejected with HTTP 400.
 * **AC-10:** Given a status update with an outdated `updatedAt` timestamp, the server responds with HTTP 409 Conflict.
 * **AC-11:** Given an inactive IT Staff user ID, assigning an Action Taken or Ticket Owner to that user is rejected with HTTP 400.

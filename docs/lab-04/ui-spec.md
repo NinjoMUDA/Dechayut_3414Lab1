@@ -13,6 +13,7 @@ All Lab 4 additions strictly extend the **Zen Green** design language:
   * `IN_PROGRESS`: Amber badge (`#d97706`, light `#fef3c7`)
   * `WAITING_FOR_REQUESTER`: Purple badge (`#7c3aed`, light `#ede9fe`)
   * `RESOLVED`: Emerald badge (`#059669`, light `#d1fae5`)
+  * `REOPENED`: Cyan / Teal badge (`#0891b2`, light `#cffafe`)
   * `CLOSED`: Gray badge (`#4b5563`, light `#f3f4f6`)
   * `CANCELLED`: Rose badge (`#e11d48`, light `#ffe4e6`)
 
@@ -104,8 +105,8 @@ All Lab 4 additions strictly extend the **Zen Green** design language:
   * From `IN_PROGRESS`: `WAITING_FOR_REQUESTER`, `RESOLVED`, `CANCELLED`
   * From `WAITING_FOR_REQUESTER`: `IN_PROGRESS`, `RESOLVED`, `CANCELLED`
   * From `RESOLVED`: `CLOSED`, `REOPENED`
-  * From `REOPENED`: `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `CANCELLED`
-  * From `CLOSED` / `CANCELLED`: Terminal states (disabled or reopen only if permitted).
+  * From `REOPENED`: `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `RESOLVED`, `CANCELLED`
+  * From `CLOSED` / `CANCELLED`: Terminal states (status controls disabled or hidden; no further transitions allowed).
 * **Resolution Modal:** When selecting `RESOLVED`, a modal prompts for mandatory `Resolution Summary`.
 * **Advisory Indicator:** If Requester marked `requesterResolved: true`, a green alert badge appears: *"Requester indicated issue is resolved — Please review and confirm final resolution."*
 

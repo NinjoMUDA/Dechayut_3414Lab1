@@ -168,12 +168,13 @@ All endpoints require standard session authentication via JWT cookie or `Authori
   * `IN_PROGRESS` -> `WAITING_FOR_REQUESTER`, `RESOLVED`, `CANCELLED`
   * `WAITING_FOR_REQUESTER` -> `IN_PROGRESS`, `RESOLVED`, `CANCELLED`
   * `RESOLVED` -> `CLOSED`, `REOPENED`
-  * `REOPENED` -> `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `CANCELLED`
-  * Direct transitions from `NEW` to `RESOLVED` or `CLOSED` are rejected.
+  * `REOPENED` -> `IN_PROGRESS`, `WAITING_FOR_REQUESTER`, `RESOLVED`, `CANCELLED`
+  * `CLOSED` & `CANCELLED` -> Terminal states (no transitions permitted; any transition attempt returns 400 Bad Request)
+  * Direct transitions from `NEW` to `RESOLVED`, `CLOSED`, or `REOPENED` are rejected with 400 Bad Request.
 * **Resolution Precondition:**
   * When `newStatus === "RESOLVED"`, `resolutionSummary` is mandatory (min 5 chars).
 * **Conflict / Stale-Update Checking:**
-  * If `clientUpdatedAt` does not match the database `updatedAt` (or is strictly older), responds with `409 Conflict`:
+  * If the provided `clientUpdatedAt` does not match the database `updatedAt` (`new Date(clientUpdatedAt).getTime() !== ticket.updatedAt.getTime()`), responds with `409 Conflict`:
 ```json
 {
   "error": "Conflict",
@@ -190,3 +191,25 @@ All endpoints require standard session authentication via JWT cookie or `Authori
   "updatedAt": "2026-09-24T10:45:00.000Z"
 }
 ```
+
+---
+
+### 3.2 Ticket Assignment & Inactive User Validation
+* **Method:** `PATCH`
+* **Path:** `/api/tickets/:id/assign`
+* **Authorization:** `IT_STAFF`, `ADMIN`
+* **Request Body:**
+```json
+{
+  "ticketOwnerId": 5
+}
+```
+* **Validation Rule (FR-11 / AC-11):**
+  * If the requested user with `ticketOwnerId` has `isActive: false` (or does not exist / is not IT Staff or Admin), the request is rejected with `400 Bad Request`:
+```json
+{
+  "error": "Bad Request",
+  "message": "Cannot assign ticket to an inactive user."
+}
+```
+* **Success Response (`200 OK`):** Returns updated ticket object with newly assigned owner.
