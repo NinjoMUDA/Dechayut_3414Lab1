@@ -409,6 +409,7 @@ export async function apiUpdateStaffTicket(
     itPriority?: Priority;
     currentStatus?: TicketStatus;
     resolutionSummary?: string;
+    clientUpdatedAt?: string;
   },
   token?: string | null
 ): Promise<Ticket> {
@@ -767,6 +768,67 @@ export async function apiUpdateActionTaken(
   const json = await res.json();
   if (!res.ok) {
     throw new Error(json.message || json.error || "Failed to update action taken");
+  }
+  return json;
+}
+
+export async function apiUpdateTicketStatus(
+  ticketId: number,
+  newStatus: TicketStatus,
+  resolutionSummary?: string,
+  clientUpdatedAt?: string,
+  token?: string | null
+): Promise<{ ticketId: number; ticketNumber: string; currentStatus: TicketStatus; resolutionSummary?: string | null; updatedAt: string }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/status`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({
+      newStatus,
+      resolutionSummary,
+      clientUpdatedAt,
+    }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    if (res.status === 409) {
+      throw new Error(json.message || "Conflict: Ticket has been modified by another user.");
+    }
+    throw new Error(json.message || json.error || "Failed to update ticket status");
+  }
+  return json;
+}
+
+export async function apiAssignTicket(
+  ticketId: number,
+  ticketOwnerId: number | null,
+  token?: string | null
+): Promise<Ticket> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/assign`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({ ticketOwnerId }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to assign ticket");
   }
   return json;
 }

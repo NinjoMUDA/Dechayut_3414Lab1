@@ -16,7 +16,7 @@
 | #41 Docs: Sprint 4 Engineering Contract & Specifications | Done |
 | #42 Feature: Actions Taken Foundation & REST APIs | Done |
 | #43 Feature: Actions Taken UI & Ticket Detail Integration | Done |
-| #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | Started |
+| #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | PR Review |
 | #45 Feature: Role-Based Dashboards | Backlog |
 | #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | Backlog |
 
@@ -40,15 +40,15 @@ toktickit/
 
 ## Task Checklist — Issue #44
 - [x] Checkout `lab4-staging`, pull latest, create `feature/44-ticket-workflow`
-- [x] Push branch and open early PR to `lab4-staging`
-- [ ] Implement `PATCH /api/tickets/:id/status` endpoint in `server/src/app.ts` with strict transition matrix, resolution gate, and stale-update conflict check
-- [ ] Implement `PATCH /api/tickets/:id/assign` endpoint with inactive user check
-- [ ] Implement Supertest test suite `server/tests/lab-04/ticket-workflow.api.test.ts` (API-08 to API-11, API-13)
-- [ ] Update `StaffTicketDetail.tsx` with transition matrix alignment, conflict reload handling, and inactive staff check
-- [ ] Implement component tests `client/tests/lab-04/TicketWorkflow.test.tsx` (UI-06, UI-07)
-- [ ] Verify all server and client test suites pass with zero regression
-- [ ] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
+- [x] Push branch and open early PR to `lab4-staging` (PR #50)
+- [x] Implement `PATCH /api/tickets/:id/status` endpoint in `server/src/app.ts` with strict transition matrix, resolution gate, and stale-update conflict check
+- [x] Implement `PATCH /api/tickets/:id/assign` endpoint with inactive user check
+- [x] Implement Supertest test suite `server/tests/lab-04/ticket-workflow.api.test.ts` (API-08 to API-11, API-13)
+- [x] Update `StaffTicketDetail.tsx` with transition matrix alignment, conflict reload handling, and inactive staff check
+- [x] Implement component tests `client/tests/lab-04/TicketWorkflow.test.tsx` (UI-06, UI-07)
+- [x] Verify all server and client test suites pass with zero regression (67/67 server tests, 59/59 client tests passing)
+- [x] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
 - [ ] Peer review and merge by @vienggg
 
 ## Last Executed Command
-`git checkout -b feature/44-ticket-workflow` (Exit code: 0)
+`npm test` in client (59 passed) and server (67 passed) (Exit code: 0)

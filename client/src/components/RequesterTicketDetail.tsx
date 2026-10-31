@@ -69,6 +69,7 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
     let badgeClass = "badge-status-new";
     if (norm === "OPEN" || norm === "IN_PROGRESS") badgeClass = "badge-status-inprogress";
     if (norm === "RESOLVED" || norm === "CLOSED") badgeClass = "badge-status-resolved";
+    if (norm === "REOPENED") badgeClass = "badge-status-reopened";
 
     return <span className={`badge rounded-pill px-3 py-1 ${badgeClass}`}>{s}</span>;
   };

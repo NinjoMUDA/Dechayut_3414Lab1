@@ -10,8 +10,8 @@
 |---|---|---|---|---|---|---|
 | #47 | #41 | Docs: Sprint 4 Engineering Contract & Specifications | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
 | #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
-| #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Pending Review | - |
-| TBD | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Not Started | - |
+| #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
+| #50 | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Pending Review | - |
 | TBD | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Not Started | - |
 | TBD | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Not Started | - |
 
@@ -75,6 +75,22 @@
 ---
 
 ### Issue #43 — Feature: Actions Taken UI & Ticket Detail Integration (PR #49)
-* **Reviewer (@vienggg) Comment:** *(Awaiting review)*
-* **Author (@NinjoMUDA) Reply:** -
-* **Resolution Status:** PR opened, all 3/3 automated UI tests passing (56/56 full client suite), awaiting peer review.
+* **Reviewer (@vienggg) Comment:** Reviewed and approved. Actions feed, responsive Zen Green styling, role badges, and performer population verified.
+* **Author (@NinjoMUDA) Reply:** Merged via PR #49.
+* **Resolution Status:** Approved and merged into `lab4-staging` by @vienggg.
+
+---
+
+### Issue #44 — Feature: Ticket Workflow, Resolution Gate & State Transitions (PR #50)
+* **Status:** Ready for Peer Review
+* **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/50
+* **Automated Test Results:**
+  - `server/tests/lab-04/ticket-workflow.api.test.ts`: 6/6 tests passing (API-08, API-09, API-10, API-11, API-13). Full server suite 67/67 passing.
+  - `client/tests/lab-04/TicketWorkflow.test.tsx`: 3/3 tests passing (UI-06, UI-07). Full client suite 59/59 passing.
+* **Key Implementations:**
+  - Strict Sprint 4 state transition matrix enforced on both backend and frontend.
+  - `CLOSED` and `CANCELLED` are strictly terminal states (controls disabled in UI, rejected with 400 on backend).
+  - Stale-update concurrency check using `clientUpdatedAt` returns 409 Conflict with Reload button.
+  - Mandatory `resolutionSummary` (min 5 characters) when transitioning to `RESOLVED`.
+  - Inactive assignee protection returns 400 Bad Request on `PATCH /api/tickets/:id/assign` and disables inactive users in UI dropdown.
+  - Quick Reopen button visible on `RESOLVED` tickets with `.badge-status-reopened` cyan styling.
