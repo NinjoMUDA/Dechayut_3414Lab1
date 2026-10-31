@@ -13,6 +13,7 @@ import {
   PublicComment,
   InternalNote,
   TicketStatus,
+  ActionTaken,
 } from "./types/index.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -674,6 +675,102 @@ export async function apiResetUserPassword(
   return json.data;
 }
 
+// ---------------------------------------------------------------------------
+// Actions Taken APIs (Lab 4 - Issue #43)
+// ---------------------------------------------------------------------------
+
+export interface CreateActionTakenPayload {
+  actionDateTime?: string;
+  description: string;
+  result: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+}
+
+export interface UpdateActionTakenPayload {
+  actionDateTime?: string;
+  description?: string;
+  result?: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+}
+
+export async function apiGetActionsTaken(
+  ticketId: number,
+  token?: string | null
+): Promise<{ ticketId: number; actions: ActionTaken[] }> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions`, {
+    headers,
+    credentials: "include",
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to load actions taken");
+  }
+  return json;
+}
+
+export async function apiCreateActionTaken(
+  ticketId: number,
+  data: CreateActionTakenPayload,
+  token?: string | null
+): Promise<ActionTaken> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to create action taken");
+  }
+  return json;
+}
+
+export async function apiUpdateActionTaken(
+  ticketId: number,
+  actionId: number,
+  data: UpdateActionTakenPayload,
+  token?: string | null
+): Promise<ActionTaken> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions/${actionId}`, {
+    method: "PATCH",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || json.error || "Failed to update action taken");
+  }
+  return json;
+}
+
 export { API_URL };
 export type {
   Category,
@@ -690,4 +787,5 @@ export type {
   PublicComment,
   InternalNote,
   TicketStatus,
+  ActionTaken,
 };

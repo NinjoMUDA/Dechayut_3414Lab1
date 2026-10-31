@@ -76,6 +76,26 @@ export interface InternalNote {
   };
 }
 
+export interface ActionTaken {
+  id: number;
+  ticketId: number;
+  actionDateTime: string;
+  description: string;
+  result: string;
+  performedById: number;
+  performedBy: {
+    id: number;
+    name: string;
+    email: string;
+    role: Role;
+  };
+  followUpRequired: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Ticket {
   id: number;
   ticketNumber: string;
@@ -99,6 +119,7 @@ export interface Ticket {
   attachments?: Attachment[];
   comments?: PublicComment[];
   notes?: InternalNote[];
+  actionsTaken?: ActionTaken[];
 }
 
 export interface PaginatedResponse<T> {
@@ -137,4 +158,3 @@ export interface StaffQueueFilterParams {
   page?: number;
   pageSize?: number;
 }
-

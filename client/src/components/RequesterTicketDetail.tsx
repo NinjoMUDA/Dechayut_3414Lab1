@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRequester } from "../context/RequesterContext.js";
 import { Ticket, getTicketDetail } from "../api.js";
 import { AttachmentSection } from "./AttachmentSection.js";
+import { ActionsTakenPanel } from "./ActionsTakenPanel.js";
 
 interface RequesterTicketDetailProps {
   ticketId: number;
@@ -228,6 +229,12 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
         </div>
       </div>
 
+      {/* Actions Taken Section (Read-Only for Requester) */}
+      <ActionsTakenPanel
+        ticketId={ticket.id}
+        readOnly={true}
+      />
+
       {/* Attachments Section */}
       <AttachmentSection
         ticketId={ticket.id}
@@ -237,3 +244,4 @@ export const RequesterTicketDetail: React.FC<RequesterTicketDetailProps> = ({
     </div>
   );
 };
+export default RequesterTicketDetail;

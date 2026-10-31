@@ -9,8 +9,8 @@
 | PR # | Linked Issue | Title | Author | Reviewer | Review Decision | Merge Date |
 |---|---|---|---|---|---|---|
 | #47 | #41 | Docs: Sprint 4 Engineering Contract & Specifications | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
-| #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Changes Requested -> Pushed for Re-review | - |
-| TBD | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Not Started | - |
+| #48 | #42 | Feature: Actions Taken Foundation & REST APIs | @NinjoMUDA | @vienggg | Approved & Merged | 2026-10-31 |
+| #49 | #43 | Feature: Actions Taken UI & Ticket Detail Integration | @NinjoMUDA | @vienggg | Pending Review | - |
 | TBD | #44 | Feature: Ticket Workflow, Resolution Gate & State Transitions | @NinjoMUDA | @vienggg | Not Started | - |
 | TBD | #45 | Feature: Role-Based Dashboards | @NinjoMUDA | @vienggg | Not Started | - |
 | TBD | #46 | Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | @NinjoMUDA | @vienggg | Not Started | - |
@@ -70,4 +70,11 @@
   > 3. **REST APIs:** Implemented `GET /api/tickets/:id/actions`, `POST /api/tickets/:id/actions`, and `PATCH /api/tickets/:id/actions/:actionId` with strict requester ownership checks (403), performer auto-fill, and follow-up note validation (400).
   > 4. **Test Suites Passing:** Created `server/tests/lab-04/actions-taken.api.test.ts` covering API-01 through API-05 (7/7 tests passing). Full server regression suite passes 61/61 tests.
   > 5. **Documentation Updated:** `tests.md` updated with passing statuses, `ai-use.md`, `reviewer.md`, and `session_state.md` updated.
-* **Resolution Status:** Code and tests pushed, ready for re-review and merge.
+* **Resolution Status:** Approved and merged into `lab4-staging` by @vienggg.
+
+---
+
+### Issue #43 — Feature: Actions Taken UI & Ticket Detail Integration (PR #49)
+* **Reviewer (@vienggg) Comment:** *(Awaiting review)*
+* **Author (@NinjoMUDA) Reply:** -
+* **Resolution Status:** PR opened, all 3/3 automated UI tests passing (56/56 full client suite), awaiting peer review.
