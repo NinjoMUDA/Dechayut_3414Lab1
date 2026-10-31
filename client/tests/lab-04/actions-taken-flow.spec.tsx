@@ -44,7 +44,7 @@ describe("E2E-01: Actions Taken Creation and Lifecycle Flow", () => {
         const newRecord: ActionTaken = {
           id: 2,
           ticketId: tId,
-          actionDateTime: payload.actionDateTime,
+          actionDateTime: payload.actionDateTime || new Date().toISOString(),
           description: payload.description,
           result: payload.result,
           performedById: mockStaffUser.id,

@@ -49,7 +49,7 @@ describe("E2E-02: Ticket Resolution Lifecycle & Resolution Gate", () => {
       resolutionSummary: null,
       createdAt: "2026-09-24T08:00:00.000Z",
       updatedAt: "2026-09-24T08:00:00.000Z",
-      requester: { id: 10, name: "Alice Requester", email: "alice@example.com" },
+      requester: { id: 10, name: "Alice Requester", email: "alice@example.com", isActive: true },
       category: { id: 1, name: "Hardware" },
       relatedSystem: { id: 1, name: "Corporate Laptop" },
       attachments: [],
