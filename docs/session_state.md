@@ -4,11 +4,11 @@
 - Lab 1: Completed and merged to main.
 - Lab 2: Completed and merged to main (PR #26). Built Requester ticketing, category selection, file attachments, and test suite.
 - Lab 3: Completed and merged to main. Built Authentication, IT Staff Queue & Operations, Admin User Management, and comprehensive regression test suites.
-- Lab 4: Sprint 4 Issue #41 merged via PR #47. Issue #42 merged via PR #48. Issue #43 merged via PR #49.
+- Lab 4: Sprint 4 Issues #41, #42, #43, and #44 completed and merged via PR #47, PR #48, PR #49, and PR #50.
 
 ## Current Branch & Active Issue
-- **Branch:** `feature/44-ticket-workflow` (branched from `lab4-staging`)
-- **Active Issue:** Issue #44 — Feature: Ticket Workflow, Resolution Gate & State Transitions
+- **Branch:** `feature/45-dashboards` (branched from `lab4-staging`)
+- **Active Issue:** Issue #45 — Feature: Role-Based Dashboards
 
 ## Kanban Status
 | Issue | Status |
@@ -16,8 +16,8 @@
 | #41 Docs: Sprint 4 Engineering Contract & Specifications | Done |
 | #42 Feature: Actions Taken Foundation & REST APIs | Done |
 | #43 Feature: Actions Taken UI & Ticket Detail Integration | Done |
-| #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | PR Review |
-| #45 Feature: Role-Based Dashboards | Backlog |
+| #44 Feature: Ticket Workflow, Resolution Gate & State Transitions | Done |
+| #45 Feature: Role-Based Dashboards | Started |
 | #46 Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration | Backlog |
 
 ## Project Structure
@@ -38,17 +38,18 @@ toktickit/
 - Seed: Idempotent seed executed with realistic Actions Taken
 - Target Staging: `lab4-staging`
 
-## Task Checklist — Issue #44
-- [x] Checkout `lab4-staging`, pull latest, create `feature/44-ticket-workflow`
-- [x] Push branch and open early PR to `lab4-staging` (PR #50)
-- [x] Implement `PATCH /api/tickets/:id/status` endpoint in `server/src/app.ts` with strict transition matrix, resolution gate, and stale-update conflict check
-- [x] Implement `PATCH /api/tickets/:id/assign` endpoint with inactive user check
-- [x] Implement Supertest test suite `server/tests/lab-04/ticket-workflow.api.test.ts` (API-08 to API-11, API-13)
-- [x] Update `StaffTicketDetail.tsx` with transition matrix alignment, conflict reload handling, and inactive staff check
-- [x] Implement component tests `client/tests/lab-04/TicketWorkflow.test.tsx` (UI-06, UI-07)
-- [x] Verify all server and client test suites pass with zero regression (67/67 server tests, 59/59 client tests passing)
-- [x] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
-- [ ] Peer review and merge by @vienggg
+## Task Checklist — Issue #45
+- [x] Checkout `lab4-staging`, pull latest, create `feature/45-dashboards`
+- [ ] Implement backend endpoint `GET /api/dashboards/requester` in `server/src/app.ts` (AC-06, FR-08)
+- [ ] Implement backend endpoint `GET /api/dashboards/staff` in `server/src/app.ts` (AC-07, FR-09)
+- [ ] Verify zero-data empty handling in backend dashboard endpoints (AC-12)
+- [ ] Automated Supertest test suites `requester-dashboard.api.test.ts` and `staff-dashboard.api.test.ts` (API-06, API-07, API-12)
+- [ ] Build Requester Dashboard UI component (`RequesterDashboard.tsx`) with Zen Green metric cards, quick actions, and recent tickets (UI-04)
+- [ ] Build IT Staff Dashboard UI component (`StaffDashboard.tsx`) with metric cards, priority breakdown, quick actions, and drill-down links (UI-05)
+- [ ] Automated Vitest component test suites `RequesterDashboard.test.tsx` and `StaffDashboard.test.tsx`
+- [ ] Run full regression test suites (`npm test` in server & client)
+- [ ] Update `docs/lab-04/tests.md`, `reviewer.md`, `ai-use.md`
+- [ ] Open PR, link to Issue #45, peer review & merge by @vienggg
 
 ## Last Executed Command
-`npm test` in client (59 passed) and server (67 passed) (Exit code: 0)
+`git checkout -b feature/45-dashboards` (Exit code: 0)
