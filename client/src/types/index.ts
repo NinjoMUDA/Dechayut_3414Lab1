@@ -158,3 +158,62 @@ export interface StaffQueueFilterParams {
   page?: number;
   pageSize?: number;
 }
+
+export interface RequesterDashboardMetrics {
+  myOpenTickets: number;
+  inProgress: number;
+  resolved: number;
+  closed: number;
+  waitingForRequester: number;
+}
+
+export interface RequesterRecentTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  requestedPriority: Priority;
+  updatedAt: string;
+}
+
+export interface RequesterDashboardResponse {
+  metrics: RequesterDashboardMetrics;
+  recentTickets: RequesterRecentTicket[];
+}
+
+export interface StaffDashboardMetrics {
+  newTickets: number;
+  openTickets: number;
+  inProgress: number;
+  waitingForRequester: number;
+  myAssigned: number;
+  unassigned: number;
+}
+
+export interface PriorityBreakdown {
+  URGENT: number;
+  HIGH: number;
+  MEDIUM: number;
+  LOW: number;
+}
+
+export interface StaffRecentTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  itPriority?: Priority | null;
+  requestedPriority?: Priority | null;
+  requester?: { name: string };
+  updatedAt: string;
+}
+
+export interface StaffDashboardResponse {
+  metrics: StaffDashboardMetrics;
+  priorityBreakdown: PriorityBreakdown;
+  recentQueueTickets: StaffRecentTicket[];
+  adminStats?: {
+    totalUsers: number;
+    activeUsers: number;
+  };
+}
