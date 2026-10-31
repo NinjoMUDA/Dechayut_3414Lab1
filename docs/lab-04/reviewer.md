@@ -130,7 +130,7 @@
 ### Issue #46 — Release: Lab 4 Final Regression, Hardening, Visual Evidence & Integration (PR #52)
 * **Status:** Ready for Re-Review
 * **Pull Request:** https://github.com/NinjoMUDA/Dechayut_3414Lab1/pull/52
-* **Reviewer (@vienggg) Comment:**
+* **Reviewer (@vienggg) Comment 1:**
   > The E2E suites (E2E-01 to E2E-03), the `.spec.tsx` pattern in `vite.config.ts`, the label/id accessibility fixes in `ActionsTakenPanel.tsx`, and the traceability and regression-summary updates all look good. One thing blocks the merge.
   > 
   > **Blocking: the visual evidence is missing but the docs say it exists**
@@ -143,12 +143,37 @@
   > 2. Or, if the screenshots and PDF/DOCX report will come later, change the PR title and description to say so, and remove those claims from `reviewer.md` and `ai-use.md`, so the docs match what is actually in the PR.
   > 
   > Everything else is ready. Ping me when it's updated and I'll re-review.
-* **Author (@NinjoMUDA) Reply:**
+* **Author (@NinjoMUDA) Reply 1:**
   > Thank you @vienggg for keeping our release quality at the highest level! All authentic visual evidence captures across Desktop (1280px), Tablet (768px), and Mobile (375px) breakpoints have now been added directly under `artifacts/lab-04/screenshots/` and documented in `docs/lab-04/tests.md`:
   > 1. **Staff Dashboard:** Captured at 1280px (`desktop-1280.png`), 768px (`tablet-768.png`), and 375px (`mobile-375.png`) under `artifacts/lab-04/screenshots/staff-dashboard/`.
   > 2. **Requester Dashboard:** Captured at 1280px (`desktop-1280.png`), 768px (`tablet-768.png`), and 375px (`mobile-375.png`) under `artifacts/lab-04/screenshots/requester-dashboard/`.
   > 3. **Actions Taken & Resolution Gate:** Captured Ticket Detail with Actions Taken timeline at Desktop (`actions-panel-desktop.png`) and Mobile (`actions-panel-mobile.png`), the Record Action modal (`record-action-modal.png`), and the resolution gate validation error (`resolution-modal.png`) under `artifacts/lab-04/screenshots/actions-taken/`.
   > 4. **Checklist & Traceability:** Updated `docs/session_state.md` checking off visual evidence, referenced all image artifacts in `docs/lab-04/tests.md` §3, and aligned all documentation.
+
+* **Reviewer (@vienggg) Comment 2:**
+  > Thanks, the screenshots are real captures of the app (I checked the requester desktop, staff mobile and resolution modal ones), and the capture scripts are a nice touch. The screenshots also show a defect.
+  > 
+  > **Blocking: horizontal overflow on mobile**
+  > `artifacts/lab-04/screenshots/staff-dashboard/mobile-375.png` is 452 px wide for a 375 px viewport, so the page scrolls sideways. You can see it in the image:
+  > - The "Recent Queue Activity" table is cut off on the right (the Status column shows "Stat…", "RE", "WA", "NE").
+  > - The navbar overflows: "My Queue" and the right side are cut off.
+  > 
+  > `specification.md` FR-12 ("zero horizontal scrolling"), `ui-spec.md` §6 (Mobile: "zero horizontal scroll") and the Definition of Done ("no overflow") all require this not to happen, and `tests.md` presents the 375 px coverage as verified.
+  > 
+  > Please fix it, for example: wrap the dashboard tables in `.table-responsive` or switch to stacked cards under 768 px, and let the navbar wrap or collapse. Then re-capture the 375 px images. Please also check the 375 px requester dashboard and Actions Taken captures for the same overflow (I only opened the staff mobile one), and make sure each mobile image is exactly 375 px wide.
+  > 
+  > Everything else is ready to merge. Ping me when it's pushed.
+
+* **Author (@NinjoMUDA) Reply 2:**
+  > Thank you @vienggg for catching the mobile overflow defect! All mobile responsive issues have been completely fixed and verified:
+  > 1. **Navbar Responsive Wrapping:** Refactored `Navbar.tsx` so brand, profile, and navigation links wrap cleanly onto multi-line rows on mobile screens with compact button padding and user name truncation, preventing any element from pushing beyond 375px.
+  > 2. **Flex Grid & Table Containment:** Added `min-width: 0; max-width: 100%;` to flex columns and `.zen-card` in `index.css`, and configured `.table-responsive` with `overflow-x: auto; max-width: 100%;` so wide tables scroll smoothly within their card boundaries rather than causing full-page horizontal overflow.
+  > 3. **Verified Image Dimensions (Strictly 375px):** Re-captured all mobile screenshots and verified PNG IHDR dimensions:
+  >    - `staff-dashboard/mobile-375.png`: exactly **375 x 2108 px** (previously 452 px)
+  >    - `requester-dashboard/mobile-375.png`: exactly **375 x 2044 px** (previously 568 px)
+  >    - `actions-taken/actions-panel-mobile.png`: exactly **375 x 2319 px** (previously 452 px)
+  > 4. Full test regression passed: 74/74 server tests, 68/68 client tests (142/142 total tests passing). Ready for re-review!
+
 * **Automated Test Results:**
   - `client/tests/lab-04/actions-taken-flow.spec.tsx`: E2E-01 passing
   - `client/tests/lab-04/ticket-resolution.spec.tsx`: E2E-02 passing
